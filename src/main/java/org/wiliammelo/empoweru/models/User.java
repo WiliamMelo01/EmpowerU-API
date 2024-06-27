@@ -1,16 +1,17 @@
 package org.wiliammelo.empoweru.models;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 import java.util.UUID;
 
 
-@Getter
-@Setter
+@Data
 @Entity(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class User {
+@AllArgsConstructor
+@NoArgsConstructor
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
