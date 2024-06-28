@@ -35,4 +35,9 @@ public class Course {
     )
     private List<Student> students;
 
+    @ElementCollection
+    @CollectionTable(name = "course_tags", joinColumns = @JoinColumn(name = "course_id"))
+    @Column(name = "tag")
+    private List<String> tags;
+
 }

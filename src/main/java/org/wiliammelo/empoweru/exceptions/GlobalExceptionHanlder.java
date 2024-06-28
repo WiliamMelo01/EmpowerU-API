@@ -20,4 +20,9 @@ public class GlobalExceptionHanlder {
         return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(CourseNotFoundException.class)
+    public ResponseEntity<CustomResponse> handleCourseNotFoundException(CourseNotFoundException ex, WebRequest request) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.NOT_FOUND);
+    }
+
 }

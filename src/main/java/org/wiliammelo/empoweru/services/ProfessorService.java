@@ -33,7 +33,7 @@ public class ProfessorService {
         return this.professorRepository.save(professor);
     }
 
-    public Professor findById(UUID id)throws UserNotFoundException {
+    public Professor findById(UUID id) throws UserNotFoundException {
         return this.professorRepository.findById(id).orElseThrow(UserNotFoundException::new);
     }
 

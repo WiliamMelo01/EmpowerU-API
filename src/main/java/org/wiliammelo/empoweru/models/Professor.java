@@ -1,24 +1,24 @@
-package org.wiliammelo.empoweru.models;
+    package org.wiliammelo.empoweru.models;
 
-import jakarta.persistence.*;
-import lombok.*;
+    import jakarta.persistence.*;
+    import lombok.*;
 
-import java.util.UUID;
+    import java.util.UUID;
 
-@Entity
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class Professor{
+    @Entity
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public class Professor{
 
-    @Id
-    @GeneratedValue(strategy =GenerationType.UUID )
-    private UUID id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.UUID )
+        private UUID id;
 
-    private String bio;
+        private String bio;
 
-    private String imageUrl;
+        private String imageUrl;
 
-    @OneToOne
-    private User user;
-}
+        @OneToOne
+        private User user;
+    }
