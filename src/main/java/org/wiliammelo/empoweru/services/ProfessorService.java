@@ -5,11 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.UpdateProfessorDTO;
-import org.wiliammelo.empoweru.dtos.student.UpdateStudentDTO;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.models.Professor;
-import org.wiliammelo.empoweru.models.Student;
 import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.repositories.ProfessorRepository;
 

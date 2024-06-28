@@ -1,7 +1,6 @@
 package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
@@ -24,10 +23,6 @@ public class CourseService {
 
     @Autowired
     private ProfessorRepository professorRepository;
-
-    @Autowired
-    private ProfessorService professorService;
-
 
     @Transactional
     public Course create(CreateCourseDTO createCourseDTO) throws UserNotFoundException {
