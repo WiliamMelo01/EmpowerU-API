@@ -5,10 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
+import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.dtos.student.UpdateStudentDTO;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
-import org.wiliammelo.empoweru.models.Student;
 import org.wiliammelo.empoweru.services.StudentService;
 
 import java.util.List;
@@ -22,18 +22,18 @@ public class StudentController {
     private StudentService studentService;
 
     @PostMapping("/")
-    public ResponseEntity<Student> create(@RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
+    public ResponseEntity<StudentDTO> create(@RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
         return new ResponseEntity<>(this.studentService.create(createStudentDTO), HttpStatus.CREATED);
     }
 
 
     @GetMapping
-    public  ResponseEntity<List<Student>> getAll(){
+    public  ResponseEntity<List<StudentDTO>> getAll(){
         return new ResponseEntity<>(this.studentService.findAll(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public  ResponseEntity<Student> getById(@PathVariable UUID id) throws UserNotFoundException {
+    public  ResponseEntity<StudentDTO> getById(@PathVariable UUID id) throws UserNotFoundException {
         return new ResponseEntity<>(this.studentService.findById(id), HttpStatus.OK);
     }
 
@@ -43,7 +43,7 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Student> update(@PathVariable UUID id, @RequestBody UpdateStudentDTO updateStudentDTO) throws UserNotFoundException {
+    public ResponseEntity<StudentDTO> update(@PathVariable UUID id, @RequestBody UpdateStudentDTO updateStudentDTO) throws UserNotFoundException {
         return new ResponseEntity<>(this.studentService.update(id, updateStudentDTO), HttpStatus.OK);
     }
 
