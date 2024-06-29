@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.wiliammelo.empoweru.dtos.course.CourseDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
 import org.wiliammelo.empoweru.dtos.course.UpdateCourseDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
-import org.wiliammelo.empoweru.models.Course;
 import org.wiliammelo.empoweru.models.CustomResponse;
 import org.wiliammelo.empoweru.services.CourseService;
 
@@ -23,16 +23,16 @@ public class CourseController {
     private CourseService courseService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Course> findById(@PathVariable("id") UUID id)throws CourseNotFoundException {
+    public ResponseEntity<CourseDTO> findById(@PathVariable("id") UUID id)throws CourseNotFoundException {
         return new ResponseEntity<>(this.courseService.findById(id), HttpStatus.OK);
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Course>> findCourses(
+    public ResponseEntity<List<CourseDTO>> findAll(
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "tags", required = false) List<String> tags
     ) {
-        List<Course> courses;
+        List<CourseDTO> courses;
 
         if (title != null && !title.isEmpty() && tags != null && !tags.isEmpty()) {
             // Buscar por título e tags
@@ -52,17 +52,17 @@ public class CourseController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Course> createCourse(@RequestBody CreateCourseDTO createCourseDTO) throws UserNotFoundException {
+    public ResponseEntity<CourseDTO> create(@RequestBody CreateCourseDTO createCourseDTO) throws UserNotFoundException {
         return new ResponseEntity<>(this.courseService.create(createCourseDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateById(@PathVariable("id") UUID id, @RequestBody UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException {
+    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID id, @RequestBody UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException {
         return new ResponseEntity<>(this.courseService.update(id, updateCourseDTO), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CustomResponse> removeById(@PathVariable("id") UUID id) throws CourseNotFoundException {
+    public ResponseEntity<CustomResponse> remove(@PathVariable("id") UUID id) throws CourseNotFoundException {
         return new ResponseEntity<>(new CustomResponse(this.courseService.delete(id), HttpStatus.OK.value()), HttpStatus.OK);
     }
 

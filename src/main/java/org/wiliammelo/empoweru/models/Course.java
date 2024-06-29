@@ -1,5 +1,6 @@
 package org.wiliammelo.empoweru.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,13 +21,17 @@ public class Course {
 
     private String description;
 
+    private int videos_count;
+
     @ManyToOne
     @JoinColumn(name = "professor_id")
     private Professor professor;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "course")
     private List<Video> videos;
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "Enrollments",
