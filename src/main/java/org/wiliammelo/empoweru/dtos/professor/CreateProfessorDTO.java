@@ -21,17 +21,4 @@ public class CreateProfessorDTO {
 
     private String imageUrl;
 
-    public User toUser(){
-        User user = new User();
-        BeanUtils.copyProperties(this, user);
-        return user;
-    }
-
-
-    public Professor toProfessor(){
-        Professor professor = new Professor();
-        BeanUtils.copyProperties(this, professor);
-        return professor;
-    }
-
 }

@@ -5,13 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
+import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.UpdateProfessorDTO;
-import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
-import org.wiliammelo.empoweru.dtos.student.UpdateStudentDTO;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.models.Professor;
-import org.wiliammelo.empoweru.models.Student;
 import org.wiliammelo.empoweru.services.ProfessorService;
 
 import java.util.List;
@@ -25,17 +23,17 @@ public class ProfessorController {
     private ProfessorService professorService;
 
     @PostMapping("/")
-    public ResponseEntity<Professor> create(@RequestBody CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
+    public ResponseEntity<ProfessorDTO> create(@RequestBody CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
         return new ResponseEntity<>(this.professorService.create(createProfessorDTO), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public  ResponseEntity<List<Professor>> getAll(){
+    public  ResponseEntity<List<ProfessorDTO>> getAll(){
         return new ResponseEntity<>(this.professorService.findAll(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public  ResponseEntity<Professor> getById(@PathVariable UUID id) throws UserNotFoundException {
+    public  ResponseEntity<ProfessorDTO> getById(@PathVariable UUID id) throws UserNotFoundException {
         return new ResponseEntity<>(this.professorService.findById(id), HttpStatus.OK);
     }
 
@@ -45,7 +43,7 @@ public class ProfessorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Professor> update(@PathVariable UUID id, @RequestBody UpdateProfessorDTO updateStudentDTO) throws UserNotFoundException {
+    public ResponseEntity<ProfessorDTO> update(@PathVariable UUID id, @RequestBody UpdateProfessorDTO updateStudentDTO) throws UserNotFoundException {
         return new ResponseEntity<>(this.professorService.update(id, updateStudentDTO), HttpStatus.OK);
     }
 
