@@ -9,7 +9,6 @@ import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.UpdateProfessorDTO;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
-import org.wiliammelo.empoweru.models.Professor;
 import org.wiliammelo.empoweru.services.ProfessorService;
 
 import java.util.List;
@@ -28,12 +27,12 @@ public class ProfessorController {
     }
 
     @GetMapping
-    public  ResponseEntity<List<ProfessorDTO>> getAll(){
+    public ResponseEntity<List<ProfessorDTO>> getAll() {
         return new ResponseEntity<>(this.professorService.findAll(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public  ResponseEntity<ProfessorDTO> getById(@PathVariable UUID id) throws UserNotFoundException {
+    public ResponseEntity<ProfessorDTO> getById(@PathVariable UUID id) throws UserNotFoundException {
         return new ResponseEntity<>(this.professorService.findById(id), HttpStatus.OK);
     }
 
