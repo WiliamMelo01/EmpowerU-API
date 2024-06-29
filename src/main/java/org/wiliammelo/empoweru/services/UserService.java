@@ -18,11 +18,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User create(User user) throws UserAlreadyExistsException{
+    public User create(User user) throws UserAlreadyExistsException {
         Boolean userAlreadyExists = this.userRepository.existsByEmail(user.getEmail());
 
         if(userAlreadyExists){
-            throw new UserAlreadyExistsException();
+            throw new UserAlreadyExistsException("This email is already registered.");
         }
 
         return this.userRepository.save(user);
@@ -32,17 +32,9 @@ public class UserService {
         return this.userRepository.findById(id).orElseThrow(UserNotFoundException::new);
     }
 
-    public String deleteById(UUID id) throws UserNotFoundException {
+    public void deleteById(UUID id) throws UserNotFoundException {
         User user = this.findById(id);
         this.userRepository.delete(user);
-        return "User with ID: " + id + " deleted successfully.";
     }
-
-    public User update(UUID id,  User userData) throws UserNotFoundException{
-        User user = this.findById(id);
-        BeanUtils.copyProperties(userData, user);
-        return this.userRepository.save(user);
-    }
-
 
 }
