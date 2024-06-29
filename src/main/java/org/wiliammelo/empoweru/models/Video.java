@@ -1,5 +1,6 @@
 package org.wiliammelo.empoweru.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +19,11 @@ public class Video {
     private String url;
 
     private String title;
+
+    private double durationInSeconds;
+
+    @Column(name = "display_order")
+    private int displayOrder;
 
     @ManyToOne
     @JoinColumn(name = "course_id")
