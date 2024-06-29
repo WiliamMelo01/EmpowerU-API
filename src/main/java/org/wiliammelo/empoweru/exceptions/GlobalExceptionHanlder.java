@@ -24,4 +24,9 @@ public class GlobalExceptionHanlder {
         return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(VideoNotFoundException.class)
+    public ResponseEntity<CustomResponse> handleVideoNotFoundException(VideoNotFoundException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.NOT_FOUND);
+    }
+
 }
