@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public class UserAlreadyExistsException extends CustomException {
 
-    public UserAlreadyExistsException() {
-        super("User already exists.", HttpStatus.CONFLICT.value());
+    public UserAlreadyExistsException(String message) {
+        super(message, HttpStatus.CONFLICT.value());
     }
 }
