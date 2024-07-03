@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Entity class representing a Video.
+ */
 @Entity
 @Data
 @AllArgsConstructor

@@ -4,12 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.wiliammelo.empoweru.dtos.CustomResponse;
 import org.wiliammelo.empoweru.dtos.course.CourseDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
 import org.wiliammelo.empoweru.dtos.course.UpdateCourseDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
-import org.wiliammelo.empoweru.models.CustomResponse;
 import org.wiliammelo.empoweru.services.CourseService;
 
 import java.util.List;
@@ -19,11 +19,15 @@ import java.util.UUID;
 @RequestMapping("/course")
 public class CourseController {
 
+    private final CourseService courseService;
+
     @Autowired
-    private CourseService courseService;
+    CourseController(CourseService courseService) {
+        this.courseService = courseService;
+    }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CourseDTO> findById(@PathVariable("id") UUID id)throws CourseNotFoundException {
+    public ResponseEntity<CourseDTO> findById(@PathVariable("id") UUID id) throws CourseNotFoundException {
         return new ResponseEntity<>(this.courseService.findById(id), HttpStatus.OK);
     }
 

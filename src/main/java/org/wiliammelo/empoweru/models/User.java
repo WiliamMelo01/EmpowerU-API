@@ -1,11 +1,15 @@
 package org.wiliammelo.empoweru.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-
+/**
+ * Entity class representing a User.
+ */
 @Data
 @Entity(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)

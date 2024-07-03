@@ -1,11 +1,13 @@
 package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.dtos.student.UpdateStudentDTO;
+import org.wiliammelo.empoweru.exceptions.StudentNotFoundException;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.mappers.StudentMapper;
@@ -16,15 +18,27 @@ import org.wiliammelo.empoweru.repositories.StudentRepository;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service class for managing students.
+ * <p>
+ * This class provides services for creating, retrieving, updating, and deleting students. It interacts with the {@link StudentRepository}
+ * and {@link UserService} to perform operations on {@link Student} entities.
+ * </p>
+ */
 @Service
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class StudentService {
 
-    @Autowired
-    private StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
-
+    /**
+     * Creates a new student with the provided {@link CreateStudentDTO} object.
+     *
+     * @param createStudentDTO Data transfer object containing the student's information.
+     * @return The created student as a {@link StudentDTO}.
+     * @throws UserAlreadyExistsException if the user already exists.
+     */
     @Transactional
     public StudentDTO create(CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
         User user = this.userService.create(StudentMapper.INSTANCE.toUser(createStudentDTO));
@@ -33,32 +47,62 @@ public class StudentService {
         return StudentMapper.INSTANCE.toStudentDTO(this.studentRepository.save(student));
     }
 
-    public StudentDTO findById(UUID id)throws UserNotFoundException{
-        Student student = this.studentRepository.findById(id).orElseThrow(UserNotFoundException::new);
+    /**
+     * Finds a student by ID.
+     *
+     * @param id The UUID of the student to find.
+     * @return The found student as a {@link StudentDTO}.
+     * @throws StudentNotFoundException if the student is not found.
+     */
+    public StudentDTO findById(UUID id) throws StudentNotFoundException {
+        Student student = this.studentRepository.findById(id)
+                .orElseThrow(StudentNotFoundException::new);
         return StudentMapper.INSTANCE.toStudentDTO(student);
     }
 
-    public List<StudentDTO> findAll(){
-        List<Student> students =  (List<Student>) this.studentRepository.findAll();
+    /**
+     * Retrieves all students.
+     *
+     * @return A list of all students as {@link StudentDTO}s.
+     */
+    public List<StudentDTO> findAll() {
+        List<Student> students = (List<Student>) this.studentRepository.findAll();
         return students.stream().map(StudentMapper.INSTANCE::toStudentDTO).toList();
     }
 
+    /**
+     * Deletes a student by ID.
+     *
+     * @param id The UUID of the student to delete.
+     * @return A confirmation message.
+     * @throws UserNotFoundException if the user is not found.
+     */
     @Transactional
     public String deleteById(UUID id) throws UserNotFoundException {
-        Student student = this.studentRepository.findById(id).orElseThrow(UserNotFoundException::new);
+        Student student = this.studentRepository.findById(id)
+                .orElseThrow(StudentNotFoundException::new);
         this.studentRepository.delete(student);
         this.userService.deleteById(student.getUser().getId());
         return "Student with ID: " + id + " deleted successfully.";
     }
 
+    /**
+     * Updates a student's information with the provided {@link UpdateStudentDTO} object.
+     *
+     * @param id               The UUID of the student to update.
+     * @param updateStudentDTO Data transfer object containing the updated student's information.
+     * @return The updated student as a {@link StudentDTO}.
+     * @throws StudentNotFoundException if the student is not found.
+     */
     @Transactional
-    public StudentDTO update(UUID id,  UpdateStudentDTO updateStudentDTO) throws UserNotFoundException{
-        Student student = this.studentRepository.findById(id).orElseThrow(UserNotFoundException::new);
+    public StudentDTO update(UUID id, UpdateStudentDTO updateStudentDTO) throws StudentNotFoundException {
+        Student student = this.studentRepository.findById(id)
+                .orElseThrow(StudentNotFoundException::new);
 
-        // Atualiza os dados do usuário associado ao estudante
-        student.getUser().setName(updateStudentDTO.getName());
-        student.getUser().setEmail(updateStudentDTO.getEmail());
-        student.getUser().setGender(updateStudentDTO.getGender());
+        User user = student.getUser();
+        user.setName(updateStudentDTO.getName());
+        user.setEmail(updateStudentDTO.getEmail());
+        user.setGender(updateStudentDTO.getGender());
 
         return StudentMapper.INSTANCE.toStudentDTO(studentRepository.save(student));
     }

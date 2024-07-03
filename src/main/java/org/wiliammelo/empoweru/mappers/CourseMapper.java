@@ -7,13 +7,32 @@ import org.wiliammelo.empoweru.dtos.course.CourseDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
 import org.wiliammelo.empoweru.models.Course;
 
+/**
+ * Mapper interface for converting between Course entities and their DTO representations.
+ * Utilizes MapStruct for mapping fields between source and target objects.
+ */
 @Mapper
 public interface CourseMapper {
 
+    /**
+     * Instance of the CourseMapper for use where dependency injection is not available.
+     */
     CourseMapper INSTANCE = Mappers.getMapper(CourseMapper.class);
 
+    /**
+     * Converts a CreateCourseDTO to a Course entity.
+     *
+     * @param courseDTO The CreateCourseDTO to convert.
+     * @return The converted Course entity.
+     */
     Course toCourse(CreateCourseDTO courseDTO);
 
+    /**
+     * Converts a Course entity to a CourseDTO.
+     *
+     * @param course The Course entity to convert.
+     * @return The converted CourseDTO.
+     */
     @Mapping(source = "professor.user.name", target = "professor.name")
     @Mapping(source = "professor.user.email", target = "professor.email")
     @Mapping(source = "professor.user.gender", target = "professor.gender")

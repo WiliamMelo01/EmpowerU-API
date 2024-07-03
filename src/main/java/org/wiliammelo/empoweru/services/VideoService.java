@@ -1,6 +1,7 @@
 package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,7 +10,7 @@ import org.wiliammelo.empoweru.dtos.video.UpdateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.VideoDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
 import org.wiliammelo.empoweru.exceptions.VideoNotFoundException;
-import org.wiliammelo.empoweru.fileUpload.FileUploader;
+import org.wiliammelo.empoweru.file_upload.FileUploader;
 import org.wiliammelo.empoweru.mappers.VideoMapper;
 import org.wiliammelo.empoweru.models.Course;
 import org.wiliammelo.empoweru.models.Video;
@@ -20,74 +21,117 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service class for managing video-related operations.
+ * Provides functionality to create, find, delete, and update videos associated with courses.
+ * Utilizes {@link VideoRepository} for persistence operations.
+ * Utilizes {@link CourseRepository} for persistence operations.
+ * Utilizes {@link FileUploader} for handling file uploads.
+ */
 @Service
+@AllArgsConstructor(onConstructor_ = @__(@Autowired))
 public class VideoService {
 
-    @Autowired
-    private VideoRepository videoRepository;
+    private final VideoRepository videoRepository;
+    private final FileUploader fileUploader;
+    private final CourseRepository courseRepository;
 
-    @Autowired
-    private FileUploader fileUploader;
-
-    @Autowired
-    private CourseRepository courseRepository;
-
+    /**
+     * Creates a new video based on {@link CreateVideoDTO} object and associates it with a course.
+     * The video's display order is adjusted if necessary to maintain sequence integrity.
+     *
+     * @param createVideoDTO DTO containing video creation details.
+     * @param file           The video file to be uploaded.
+     * @return The created VideoDTO.
+     * @throws IOException             If an error occurs during file upload.
+     * @throws CourseNotFoundException If the associated course is not found.
+     */
     public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file) throws IOException, CourseNotFoundException {
-        Course course = this.courseRepository.findById(createVideoDTO.getCourseId()).orElseThrow(CourseNotFoundException::new);
+        Course course = this.courseRepository.findById(createVideoDTO.getCourseId())
+                .orElseThrow(CourseNotFoundException::new);
 
         Video video = VideoMapper.INSTANCE.toVideo(createVideoDTO);
         video.setCourse(course);
 
-        int newOrder = video.getDisplayOrder();
+        // Ensure the new order is within valid range
         int maxOrder = course.getVideos().size() + 1;
-
-        if (newOrder <= 0 || newOrder > maxOrder) {
+        if (video.getDisplayOrder() <= 0 || video.getDisplayOrder() > maxOrder) {
             throw new IllegalArgumentException("Invalid display order");
         }
 
-        // Ajustar a ordem dos vídeos
-        if (newOrder <= course.getVideos().size()) {
-            List<Video> videos = this.videoRepository.findAllByWithDisplayOrderBiggerThanOrEqual(video.getDisplayOrder());
-            this.incrementDisplayOrder(videos);
+        // Adjust the order of existing videos if necessary
+        if (video.getDisplayOrder() <= course.getVideos().size()) {
+            List<Video> videos = videoRepository.findAllByWithDisplayOrderBiggerThanOrEqual(video.getDisplayOrder());
+            incrementDisplayOrder(videos);
         }
 
-        String videoURl = fileUploader.upload(file);
-        video.setUrl(videoURl);
+        video.setUrl(fileUploader.upload(file));
 
-        Video createdVideo = this.videoRepository.save(video);
-        return VideoMapper.INSTANCE.toVideoDTO(createdVideo);
+        return VideoMapper.INSTANCE.toVideoDTO(videoRepository.save(video));
     }
 
+    /**
+     * Finds all videos associated with a given course, ordered by their display order.
+     *
+     * @param courseId The UUID of the course.
+     * @return A list of VideoDTOs.
+     * @throws CourseNotFoundException If the course is not found.
+     */
     public List<VideoDTO> findByCourse(UUID courseId) throws CourseNotFoundException {
-        Course course = this.courseRepository.findById(courseId).orElseThrow(CourseNotFoundException::new);
+        Course course = this.courseRepository.findById(courseId)
+                .orElseThrow(CourseNotFoundException::new);
 
-        return this.videoRepository.findAllByCourseOrderByDisplayOrder(course).stream().map(VideoMapper.INSTANCE::toVideoDTO).toList();
+        return this.videoRepository.findAllByCourseOrderByDisplayOrder(course).stream()
+                .map(VideoMapper.INSTANCE::toVideoDTO)
+                .toList();
     }
 
+    /**
+     * Deletes a video by its ID.
+     *
+     * @param courseId The UUID of the video to delete.
+     * @return A success message.
+     * @throws CourseNotFoundException If the video or course is not found.
+     */
     @Transactional
-    public String delete(UUID courseId)throws CourseNotFoundException{
+    public String delete(UUID courseId) throws CourseNotFoundException {
         Video video = this.videoRepository.findById(courseId).orElseThrow(CourseNotFoundException::new);
         this.videoRepository.delete(video);
-        return "Video deleted successfully.";
+        return "Video with id " + courseId + " deleted successfully.";
     }
 
+    /**
+     * Updates a video's details base on {@link UpdateVideoDTO} and re-uploads the video file.
+     *
+     * @param courseId       The UUID of the video to update.
+     * @param updateVideoDTO DTO containing updated video details.
+     * @param file           The new video file to be uploaded.
+     * @return The updated VideoDTO.
+     * @throws CourseNotFoundException If the associated course is not found.
+     * @throws VideoNotFoundException  If the video to update is not found.
+     * @throws IOException             If an error occurs during file upload.
+     */
     public VideoDTO update(UUID courseId, UpdateVideoDTO updateVideoDTO, MultipartFile file) throws CourseNotFoundException, VideoNotFoundException, IOException {
-
-        Course course = this.courseRepository.findById(updateVideoDTO.getCourseId()).orElseThrow(CourseNotFoundException::new);
-        Video video = this.videoRepository.findById(courseId).orElseThrow(VideoNotFoundException::new);
+        Course course = this.courseRepository.findById(updateVideoDTO.getCourseId())
+                .orElseThrow(CourseNotFoundException::new);
+        Video video = this.videoRepository.findById(courseId)
+                .orElseThrow(VideoNotFoundException::new);
 
         video.setCourse(course);
         video.setTitle(updateVideoDTO.getTitle());
         video.setDurationInSeconds(updateVideoDTO.getDurationInSeconds());
+        video.setUrl(fileUploader.upload(file));
 
-        String videoURl = fileUploader.upload(file);
-        video.setUrl(videoURl);
-
-        Video createdVideo = this.videoRepository.save(video);
-        return VideoMapper.INSTANCE.toVideoDTO(createdVideo);
+        return VideoMapper.INSTANCE.toVideoDTO(videoRepository.save(video));
     }
 
-    private void incrementDisplayOrder(List<Video> videos){
+    /**
+     * Increments the display order of a list of videos.
+     * This is a private helper method used to maintain the correct order of videos within a course.
+     *
+     * @param videos The list of videos whose display order needs to be incremented.
+     */
+    private void incrementDisplayOrder(List<Video> videos) {
         for (Video v : videos) {
             v.setDisplayOrder(v.getDisplayOrder() + 1);
             this.videoRepository.save(v);
