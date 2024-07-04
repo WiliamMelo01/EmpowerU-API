@@ -2,6 +2,8 @@ package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
@@ -37,6 +39,7 @@ public class ProfessorService {
      * @return The created professor as a {@link ProfessorDTO}.
      * @throws UserAlreadyExistsException if the user already exists.
      */
+    @CacheEvict(value = "professor", allEntries = true)
     @Transactional
     public ProfessorDTO create(CreateProfessorDTO professorDTO) throws UserAlreadyExistsException {
         User user = this.userService.create(ProfessorMapper.INSTANCE.toUser(professorDTO));
@@ -52,6 +55,7 @@ public class ProfessorService {
      * @return The found professor as a {@link ProfessorDTO}.
      * @throws ProfessorNotFoundException if the professor with the specified ID does not exist.
      */
+    @Cacheable(value = "professor", key = "#id")
     public ProfessorDTO findById(UUID id) throws ProfessorNotFoundException {
         Professor professor = this.professorRepository.findById(id)
                 .orElseThrow(ProfessorNotFoundException::new);
@@ -63,6 +67,7 @@ public class ProfessorService {
      *
      * @return A list of {@link ProfessorDTO} representing all professors in the repository.
      */
+    @Cacheable(value = "professor")
     public List<ProfessorDTO> findAll() {
         List<Professor> professors = (List<Professor>) professorRepository.findAll();
         return professors.stream().map(ProfessorMapper.INSTANCE::toProfessorDTO).toList();
@@ -75,6 +80,7 @@ public class ProfessorService {
      * @return A success message indicating the deletion.
      * @throws UserNotFoundException if the user with the specified ID does not exist.
      */
+    @CacheEvict(value = "professor", allEntries = true)
     @Transactional
     public String deleteById(UUID id) throws UserNotFoundException {
         Professor professor = this.professorRepository.findById(id)
@@ -93,6 +99,7 @@ public class ProfessorService {
      * @return The updated professor as a {@link ProfessorDTO}.
      * @throws ProfessorNotFoundException if the professor with the specified ID does not exist.
      */
+    @CacheEvict(value = "professor", allEntries = true)
     @Transactional
     public ProfessorDTO update(UUID id, UpdateProfessorDTO professorDTO) throws ProfessorNotFoundException {
         Professor professor = this.professorRepository.findById(id)

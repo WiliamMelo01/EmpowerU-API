@@ -2,6 +2,8 @@ package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.wiliammelo.empoweru.dtos.video.CreateVideoDTO;
@@ -51,6 +53,7 @@ public class VideoService {
      * @throws CourseNotFoundException  If the associated course is not found.
      * @throws InvalidFileTypeException If the uploaded file type is not allowed.
      */
+    @CacheEvict(value = "video", allEntries = true)
     public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file) throws IOException, CourseNotFoundException, InvalidFileTypeException {
 
         if (!ALLOWED_FILE_TYPES.contains(file.getContentType())) {
@@ -87,6 +90,7 @@ public class VideoService {
      * @return A list of VideoDTOs.
      * @throws CourseNotFoundException If the course is not found.
      */
+    @Cacheable(value = "video", key = "#courseId")
     public List<VideoDTO> findByCourse(UUID courseId) throws CourseNotFoundException {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
@@ -103,6 +107,7 @@ public class VideoService {
      * @return A success message.
      * @throws CourseNotFoundException If the video or course is not found.
      */
+    @CacheEvict(value = "video", allEntries = true)
     @Transactional
     public String delete(UUID courseId) throws CourseNotFoundException {
         Video video = this.videoRepository.findById(courseId).orElseThrow(CourseNotFoundException::new);
@@ -121,6 +126,7 @@ public class VideoService {
      * @throws VideoNotFoundException  If the video to update is not found.
      * @throws IOException             If an error occurs during file upload.
      */
+    @CacheEvict(value = "video", allEntries = true)
     public VideoDTO update(UUID courseId, UpdateVideoDTO updateVideoDTO, MultipartFile file) throws CourseNotFoundException, VideoNotFoundException, IOException {
         Course course = this.courseRepository.findById(UUID.fromString(updateVideoDTO.getCourseId()))
                 .orElseThrow(CourseNotFoundException::new);

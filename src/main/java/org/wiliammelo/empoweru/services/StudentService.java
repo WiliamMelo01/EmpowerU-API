@@ -2,6 +2,8 @@ package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
@@ -38,6 +40,7 @@ public class StudentService {
      * @return The created student as a {@link StudentDTO}.
      * @throws UserAlreadyExistsException if the user already exists.
      */
+    @CacheEvict(value = "student", allEntries = true)
     @Transactional
     public StudentDTO create(CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
         User user = this.userService.create(StudentMapper.INSTANCE.toUser(createStudentDTO));
@@ -53,6 +56,7 @@ public class StudentService {
      * @return The found student as a {@link StudentDTO}.
      * @throws StudentNotFoundException if the student is not found.
      */
+    @Cacheable(value = "student", key = "#id")
     public StudentDTO findById(UUID id) throws StudentNotFoundException {
         Student student = this.studentRepository.findById(id)
                 .orElseThrow(StudentNotFoundException::new);
@@ -64,6 +68,7 @@ public class StudentService {
      *
      * @return A list of all students as {@link StudentDTO}s.
      */
+    @Cacheable(value = "student")
     public List<StudentDTO> findAll() {
         List<Student> students = (List<Student>) this.studentRepository.findAll();
         return students.stream().map(StudentMapper.INSTANCE::toStudentDTO).toList();
@@ -76,6 +81,7 @@ public class StudentService {
      * @return A confirmation message.
      * @throws UserNotFoundException if the user is not found.
      */
+    @CacheEvict(value = "student", allEntries = true)
     @Transactional
     public String deleteById(UUID id) throws UserNotFoundException {
         Student student = this.studentRepository.findById(id)
@@ -93,6 +99,7 @@ public class StudentService {
      * @return The updated student as a {@link StudentDTO}.
      * @throws StudentNotFoundException if the student is not found.
      */
+    @CacheEvict(value = "student", allEntries = true)
     @Transactional
     public StudentDTO update(UUID id, UpdateStudentDTO updateStudentDTO) throws StudentNotFoundException {
         Student student = this.studentRepository.findById(id)

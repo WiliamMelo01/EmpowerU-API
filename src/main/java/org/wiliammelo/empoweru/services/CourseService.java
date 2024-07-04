@@ -2,6 +2,8 @@ package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.course.CourseDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
@@ -39,6 +41,7 @@ public class CourseService {
      * @return The created course as a {@link CourseDTO}.
      * @throws UserNotFoundException if the professor with the specified ID does not exist.
      */
+    @CacheEvict(value = "course", allEntries = true)
     @Transactional
     public CourseDTO create(CreateCourseDTO createCourseDTO) throws UserNotFoundException {
         Professor professor = this.professorRepository.findById(UUID.fromString(createCourseDTO.getProfessorId()))
@@ -54,6 +57,7 @@ public class CourseService {
      *
      * @return A list of {@link CourseDTO} representing all courses in the repository.
      */
+    @Cacheable("course")
     public List<CourseDTO> findAll() {
         List<Course> courseList = (List<Course>) this.courseRepository.findAll();
         return courseList.stream()
@@ -68,6 +72,7 @@ public class CourseService {
      * @return The found course as a {@link CourseDTO}.
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      */
+    @Cacheable(value = "course", key = "#id")
     public CourseDTO findById(UUID id) throws CourseNotFoundException {
         Course course = this.courseRepository.findById(id)
                 .orElseThrow(CourseNotFoundException::new);
@@ -80,6 +85,7 @@ public class CourseService {
      * @param title The title to search for in course titles.
      * @return A list of {@link CourseDTO} objects that match the title criteria.
      */
+    @Cacheable(value = "course", key = "#title")
     public List<CourseDTO> findByTitle(String title) {
         List<Course> courseList = this.courseRepository.findByTitleContainingIgnoreCase(title);
         return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).toList();
@@ -91,6 +97,7 @@ public class CourseService {
      * @param tags The list of tags to search for in course tags.
      * @return A list of {@link CourseDTO} objects that match the tags criteria.
      */
+    @Cacheable(value = "course", key = "#tags")
     public List<CourseDTO> findByTags(List<String> tags) {
         List<String> tagsInLowerCase = tags.stream().map(String::toLowerCase).toList();
         List<Course> courseList = this.courseRepository.findByTagsContainingIgnoreCase(tagsInLowerCase);
@@ -104,6 +111,7 @@ public class CourseService {
      * @param tags  The list of tags to search for in course tags.
      * @return A list of {@link CourseDTO} objects that match the title and tags criteria.
      */
+    @Cacheable(value = "course", key = "#title + '|' + T(java.util.Objects).hash(#tags.stream().sorted().join(','))")
     public List<CourseDTO> findByTitleAndTags(String title, List<String> tags) {
         List<String> tagsInLowerCase = tags.stream().map(String::toLowerCase).toList();
         List<Course> courseList = this.courseRepository.findByTitleContainingIgnoreCaseAndTagsContainingIgnoreCase(title, tagsInLowerCase);
@@ -118,6 +126,7 @@ public class CourseService {
      * @return The updated course details as a {@link CourseDTO}.
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      */
+    @CacheEvict(value = "course", allEntries = true)
     public CourseDTO update(UUID id, UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException {
         Course course = this.courseRepository.findById(id)
                 .orElseThrow(CourseNotFoundException::new);
@@ -136,6 +145,7 @@ public class CourseService {
      * @return A confirmation message indicating the course has been successfully deleted.
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      */
+    @CacheEvict(value = "course", allEntries = true)
     @Transactional
     public String delete(UUID id) throws CourseNotFoundException {
         Course course = this.courseRepository.findById(id)
