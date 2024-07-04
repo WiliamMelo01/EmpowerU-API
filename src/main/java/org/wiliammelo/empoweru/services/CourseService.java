@@ -2,7 +2,6 @@ package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.course.CourseDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
@@ -26,7 +25,7 @@ import java.util.UUID;
  * {@link ProfessorRepository}, and {@link VideoRepository} to perform operations on {@link Course} entities.</p>
  */
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor
 public class CourseService {
 
     private final CourseRepository courseRepository;
@@ -42,7 +41,7 @@ public class CourseService {
      */
     @Transactional
     public CourseDTO create(CreateCourseDTO createCourseDTO) throws UserNotFoundException {
-        Professor professor = this.professorRepository.findById(createCourseDTO.getProfessorId())
+        Professor professor = this.professorRepository.findById(UUID.fromString(createCourseDTO.getProfessorId()))
                 .orElseThrow(UserNotFoundException::new);
 
         Course course = CourseMapper.INSTANCE.toCourse(createCourseDTO);

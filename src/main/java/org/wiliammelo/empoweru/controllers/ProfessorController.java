@@ -1,6 +1,7 @@
 package org.wiliammelo.empoweru.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +17,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/professor")
+@AllArgsConstructor
 public class ProfessorController {
 
-    @Autowired
-    private ProfessorService professorService;
+    private final ProfessorService professorService;
 
     @PostMapping("/")
-    public ResponseEntity<ProfessorDTO> create(@RequestBody CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
+    public ResponseEntity<ProfessorDTO> create(@RequestBody @Valid CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
         return new ResponseEntity<>(this.professorService.create(createProfessorDTO), HttpStatus.CREATED);
     }
 
@@ -42,7 +43,7 @@ public class ProfessorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProfessorDTO> update(@PathVariable UUID id, @RequestBody UpdateProfessorDTO updateStudentDTO) throws UserNotFoundException {
+    public ResponseEntity<ProfessorDTO> update(@PathVariable UUID id, @RequestBody @Valid UpdateProfessorDTO updateStudentDTO) throws UserNotFoundException {
         return new ResponseEntity<>(this.professorService.update(id, updateStudentDTO), HttpStatus.OK);
     }
 

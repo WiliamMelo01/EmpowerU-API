@@ -1,6 +1,7 @@
 package org.wiliammelo.empoweru.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,14 +18,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/course")
+@AllArgsConstructor
 public class CourseController {
 
     private final CourseService courseService;
-
-    @Autowired
-    CourseController(CourseService courseService) {
-        this.courseService = courseService;
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<CourseDTO> findById(@PathVariable("id") UUID id) throws CourseNotFoundException {
@@ -39,16 +36,16 @@ public class CourseController {
         List<CourseDTO> courses;
 
         if (title != null && !title.isEmpty() && tags != null && !tags.isEmpty()) {
-            // Buscar por título e tags
+            // Find by tags and title
             courses = courseService.findByTitleAndTags(title, tags);
         } else if (title != null && !title.isEmpty()) {
-            // Buscar somente por título
+            // Find only by title
             courses = courseService.findByTitle(title);
         } else if (tags != null && !tags.isEmpty()) {
-            // Buscar somente por tags
+            // Find only by tags
             courses = courseService.findByTags(tags);
         } else {
-            // Se nenhum parâmetro for fornecido, retornar todos os cursos
+            // If none parameter is given returns all courses
             courses = courseService.findAll();
         }
 
@@ -56,12 +53,12 @@ public class CourseController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<CourseDTO> create(@RequestBody CreateCourseDTO createCourseDTO) throws UserNotFoundException {
+    public ResponseEntity<CourseDTO> create(@Valid @RequestBody CreateCourseDTO createCourseDTO) throws UserNotFoundException {
         return new ResponseEntity<>(this.courseService.create(createCourseDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID id, @RequestBody UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException {
+    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID id, @RequestBody @Valid UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException {
         return new ResponseEntity<>(this.courseService.update(id, updateCourseDTO), HttpStatus.OK);
     }
 

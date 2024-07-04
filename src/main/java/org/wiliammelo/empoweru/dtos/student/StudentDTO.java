@@ -9,12 +9,12 @@ import java.util.UUID;
 @Setter
 public class StudentDTO {
 
-    public UUID id;
+    private UUID id;
 
-    public String name;
+    private String name;
 
-    public String email;
+    private String email;
 
-    public char gender;
+    private String gender;
 
 }

@@ -3,7 +3,6 @@ package org.wiliammelo.empoweru.file_upload;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,7 +13,7 @@ import java.io.IOException;
  * Implements the FileUploader interface to provide a method for uploading files.
  */
 @Service
-@AllArgsConstructor(onConstructor_ = @__(@Autowired))
+@AllArgsConstructor
 public class AzureFileUploader implements FileUploader {
 
     private final BlobContainerClient blobContainerClient;

@@ -48,6 +48,7 @@ public interface ProfessorMapper {
     @Mapping(source = "user.name", target = "name")
     @Mapping(source = "user.email", target = "email")
     @Mapping(source = "user.gender", target = "gender")
+    @Mapping(source = "imageUrl", target = "imageURL")
     ProfessorDTO toProfessorDTO(Professor professor);
 
     /**

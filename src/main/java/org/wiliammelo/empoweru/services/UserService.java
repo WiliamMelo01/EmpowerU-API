@@ -1,7 +1,6 @@
 package org.wiliammelo.empoweru.services;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
@@ -16,7 +15,7 @@ import java.util.UUID;
  * Utilizes {@link UserRepository} for persistence operations.
  */
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;

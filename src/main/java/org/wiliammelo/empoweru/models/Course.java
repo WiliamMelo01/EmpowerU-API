@@ -22,11 +22,13 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 255, nullable = false)
     private String title;
 
+    @Column(length = 1000, nullable = false)
     private String description;
 
-    private int videos_count;
+    private int videosCount;
 
     @ManyToOne
     @JoinColumn(name = "professor_id")

@@ -1,6 +1,7 @@
 package org.wiliammelo.empoweru.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,36 +17,34 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/student")
+@AllArgsConstructor
 public class StudentController {
 
-    @Autowired
-    private StudentService studentService;
+    private final StudentService studentService;
 
     @PostMapping("/")
-    public ResponseEntity<StudentDTO> create(@RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
+    public ResponseEntity<StudentDTO> create(@Valid @RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
         return new ResponseEntity<>(this.studentService.create(createStudentDTO), HttpStatus.CREATED);
     }
 
-
     @GetMapping
-    public  ResponseEntity<List<StudentDTO>> getAll(){
+    public ResponseEntity<List<StudentDTO>> getAll() {
         return new ResponseEntity<>(this.studentService.findAll(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public  ResponseEntity<StudentDTO> getById(@PathVariable UUID id) throws UserNotFoundException {
+    public ResponseEntity<StudentDTO> getById(@PathVariable UUID id) throws UserNotFoundException {
         return new ResponseEntity<>(this.studentService.findById(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) throws UserNotFoundException {
-       return new ResponseEntity<>(this.studentService.deleteById(id), HttpStatus.OK);
+        return new ResponseEntity<>(this.studentService.deleteById(id), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StudentDTO> update(@PathVariable UUID id, @RequestBody UpdateStudentDTO updateStudentDTO) throws UserNotFoundException {
+    public ResponseEntity<StudentDTO> update(@PathVariable UUID id, @RequestBody @Valid UpdateStudentDTO updateStudentDTO) throws UserNotFoundException {
         return new ResponseEntity<>(this.studentService.update(id, updateStudentDTO), HttpStatus.OK);
     }
-
 
 }

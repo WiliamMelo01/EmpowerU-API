@@ -21,12 +21,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 100)
     private String name;
 
+    @Column(length = 100)
     private String email;
 
+    @Column(length = 100)
     private String password;
 
-    private char gender;
+    @Column(length = 1)
+    private String gender;
 
 }

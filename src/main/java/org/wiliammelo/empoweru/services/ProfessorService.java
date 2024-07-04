@@ -2,7 +2,6 @@ package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
@@ -25,7 +24,7 @@ import java.util.UUID;
  * to perform operations on {@link Professor} entities.</p>
  */
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor
 public class ProfessorService {
 
     private final ProfessorRepository professorRepository;
@@ -41,7 +40,6 @@ public class ProfessorService {
     @Transactional
     public ProfessorDTO create(CreateProfessorDTO professorDTO) throws UserAlreadyExistsException {
         User user = this.userService.create(ProfessorMapper.INSTANCE.toUser(professorDTO));
-
         Professor professor = ProfessorMapper.INSTANCE.toProfessor(professorDTO);
         professor.setUser(user);
         return ProfessorMapper.INSTANCE.toProfessorDTO(this.professorRepository.save(professor));

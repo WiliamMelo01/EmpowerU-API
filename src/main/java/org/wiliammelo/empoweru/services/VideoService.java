@@ -2,13 +2,13 @@ package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.wiliammelo.empoweru.dtos.video.CreateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.UpdateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.VideoDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
+import org.wiliammelo.empoweru.exceptions.InvalidFileTypeException;
 import org.wiliammelo.empoweru.exceptions.VideoNotFoundException;
 import org.wiliammelo.empoweru.file_upload.FileUploader;
 import org.wiliammelo.empoweru.mappers.VideoMapper;
@@ -18,6 +18,7 @@ import org.wiliammelo.empoweru.repositories.CourseRepository;
 import org.wiliammelo.empoweru.repositories.VideoRepository;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,12 +30,15 @@ import java.util.UUID;
  * Utilizes {@link FileUploader} for handling file uploads.
  */
 @Service
-@AllArgsConstructor(onConstructor_ = @__(@Autowired))
+@AllArgsConstructor
 public class VideoService {
 
     private final VideoRepository videoRepository;
     private final FileUploader fileUploader;
     private final CourseRepository courseRepository;
+
+    private static final List<String> ALLOWED_FILE_TYPES = Arrays.asList("video/mp4", "video/mkv");
+
 
     /**
      * Creates a new video based on {@link CreateVideoDTO} object and associates it with a course.
@@ -43,11 +47,17 @@ public class VideoService {
      * @param createVideoDTO DTO containing video creation details.
      * @param file           The video file to be uploaded.
      * @return The created VideoDTO.
-     * @throws IOException             If an error occurs during file upload.
-     * @throws CourseNotFoundException If the associated course is not found.
+     * @throws IOException              If an error occurs during file upload.
+     * @throws CourseNotFoundException  If the associated course is not found.
+     * @throws InvalidFileTypeException If the uploaded file type is not allowed.
      */
-    public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file) throws IOException, CourseNotFoundException {
-        Course course = this.courseRepository.findById(createVideoDTO.getCourseId())
+    public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file) throws IOException, CourseNotFoundException, InvalidFileTypeException {
+
+        if (!ALLOWED_FILE_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileTypeException(ALLOWED_FILE_TYPES);
+        }
+
+        Course course = this.courseRepository.findById(UUID.fromString(createVideoDTO.getCourseId()))
                 .orElseThrow(CourseNotFoundException::new);
 
         Video video = VideoMapper.INSTANCE.toVideo(createVideoDTO);
@@ -112,7 +122,7 @@ public class VideoService {
      * @throws IOException             If an error occurs during file upload.
      */
     public VideoDTO update(UUID courseId, UpdateVideoDTO updateVideoDTO, MultipartFile file) throws CourseNotFoundException, VideoNotFoundException, IOException {
-        Course course = this.courseRepository.findById(updateVideoDTO.getCourseId())
+        Course course = this.courseRepository.findById(UUID.fromString(updateVideoDTO.getCourseId()))
                 .orElseThrow(CourseNotFoundException::new);
         Video video = this.videoRepository.findById(courseId)
                 .orElseThrow(VideoNotFoundException::new);

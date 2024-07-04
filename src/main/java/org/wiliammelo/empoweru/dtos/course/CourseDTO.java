@@ -21,6 +21,6 @@ public class CourseDTO {
 
     private ProfessorDTO professor;
 
-    private int videos_count;
+    private int videosCount;
 
 }
