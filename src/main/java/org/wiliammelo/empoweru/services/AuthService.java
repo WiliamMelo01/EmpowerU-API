@@ -1,0 +1,63 @@
+package org.wiliammelo.empoweru.services;
+
+import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.wiliammelo.empoweru.dtos.LoginDTO;
+import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
+import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
+import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
+import org.wiliammelo.empoweru.dtos.student.StudentDTO;
+import org.wiliammelo.empoweru.exceptions.CustomException;
+import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
+import org.wiliammelo.empoweru.mappers.ProfessorMapper;
+import org.wiliammelo.empoweru.mappers.StudentMapper;
+import org.wiliammelo.empoweru.models.Professor;
+import org.wiliammelo.empoweru.models.Student;
+import org.wiliammelo.empoweru.models.User;
+import org.wiliammelo.empoweru.models.UserRole;
+import org.wiliammelo.empoweru.repositories.ProfessorRepository;
+import org.wiliammelo.empoweru.repositories.StudentRepository;
+
+@Service
+@AllArgsConstructor
+public class AuthService {
+
+    private final UserService userService;
+    private final StudentRepository studentRepository;
+    private final ProfessorRepository professorRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JWTService jwtService;
+
+    public StudentDTO registerStudent(CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
+        User user = this.userService.create(StudentMapper.INSTANCE.toUser(createStudentDTO));
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        user.setRole(UserRole.STUDENT);
+        Student student = new Student();
+        student.setUser(user);
+        return StudentMapper.INSTANCE.toStudentDTO(this.studentRepository.save(student));
+    }
+
+    public ProfessorDTO registerProfessor(CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
+        User user = this.userService.create(ProfessorMapper.INSTANCE.toUser(createProfessorDTO));
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        user.setRole(UserRole.PROFESSOR);
+        Professor professor = new Professor();
+        professor.setImageUrl(createProfessorDTO.getImageUrl());
+        professor.setBio(createProfessorDTO.getBio());
+        professor.setUser(user);
+        return ProfessorMapper.INSTANCE.toProfessorDTO(this.professorRepository.save(professor));
+    }
+
+    public String login(LoginDTO loginDTO) throws CustomException {
+        var usernamePassword = new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
+
+        return jwtService.generateToken((User) auth.getPrincipal(), (GrantedAuthority) auth.getAuthorities().toArray()[0]);
+    }
+
+}

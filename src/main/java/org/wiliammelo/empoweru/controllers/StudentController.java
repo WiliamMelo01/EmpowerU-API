@@ -5,10 +5,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.dtos.student.UpdateStudentDTO;
-import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.services.StudentService;
 
@@ -21,11 +19,6 @@ import java.util.UUID;
 public class StudentController {
 
     private final StudentService studentService;
-
-    @PostMapping("/")
-    public ResponseEntity<StudentDTO> create(@Valid @RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
-        return new ResponseEntity<>(this.studentService.create(createStudentDTO), HttpStatus.CREATED);
-    }
 
     @GetMapping
     public ResponseEntity<List<StudentDTO>> getAll() {

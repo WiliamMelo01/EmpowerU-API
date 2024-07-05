@@ -5,10 +5,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.UpdateProfessorDTO;
-import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.services.ProfessorService;
 
@@ -21,11 +19,6 @@ import java.util.UUID;
 public class ProfessorController {
 
     private final ProfessorService professorService;
-
-    @PostMapping("/")
-    public ResponseEntity<ProfessorDTO> create(@RequestBody @Valid CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
-        return new ResponseEntity<>(this.professorService.create(createProfessorDTO), HttpStatus.CREATED);
-    }
 
     @GetMapping
     public ResponseEntity<List<ProfessorDTO>> getAll() {
