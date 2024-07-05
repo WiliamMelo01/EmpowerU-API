@@ -1,6 +1,8 @@
 package org.wiliammelo.empoweru.services;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,6 +35,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
 
+    @Transactional
+    @CacheEvict(value = "student", allEntries = true)
     public StudentDTO registerStudent(CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
         User user = this.userService.create(StudentMapper.INSTANCE.toUser(createStudentDTO));
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -42,6 +46,8 @@ public class AuthService {
         return StudentMapper.INSTANCE.toStudentDTO(this.studentRepository.save(student));
     }
 
+    @Transactional
+    @CacheEvict(value = "professor", allEntries = true)
     public ProfessorDTO registerProfessor(CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
         User user = this.userService.create(ProfessorMapper.INSTANCE.toUser(createProfessorDTO));
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
