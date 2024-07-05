@@ -5,11 +5,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.UpdateProfessorDTO;
 import org.wiliammelo.empoweru.exceptions.ProfessorNotFoundException;
-import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.mappers.ProfessorMapper;
 import org.wiliammelo.empoweru.models.Professor;
@@ -31,22 +29,6 @@ public class ProfessorService {
 
     private final ProfessorRepository professorRepository;
     private final UserService userService;
-
-    /**
-     * Creates a new professor with the provided {@link CreateProfessorDTO} object.
-     *
-     * @param professorDTO The professor creation details.
-     * @return The created professor as a {@link ProfessorDTO}.
-     * @throws UserAlreadyExistsException if the user already exists.
-     */
-    @CacheEvict(value = "professor", allEntries = true)
-    @Transactional
-    public ProfessorDTO create(CreateProfessorDTO professorDTO) throws UserAlreadyExistsException {
-        User user = this.userService.create(ProfessorMapper.INSTANCE.toUser(professorDTO));
-        Professor professor = ProfessorMapper.INSTANCE.toProfessor(professorDTO);
-        professor.setUser(user);
-        return ProfessorMapper.INSTANCE.toProfessorDTO(this.professorRepository.save(professor));
-    }
 
     /**
      * Finds a professor by their ID.

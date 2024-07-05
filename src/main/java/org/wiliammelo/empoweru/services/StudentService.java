@@ -5,11 +5,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.dtos.student.UpdateStudentDTO;
 import org.wiliammelo.empoweru.exceptions.StudentNotFoundException;
-import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.mappers.StudentMapper;
 import org.wiliammelo.empoweru.models.Student;
@@ -32,22 +30,6 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final UserService userService;
-
-    /**
-     * Creates a new student with the provided {@link CreateStudentDTO} object.
-     *
-     * @param createStudentDTO Data transfer object containing the student's information.
-     * @return The created student as a {@link StudentDTO}.
-     * @throws UserAlreadyExistsException if the user already exists.
-     */
-    @CacheEvict(value = "student", allEntries = true)
-    @Transactional
-    public StudentDTO create(CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
-        User user = this.userService.create(StudentMapper.INSTANCE.toUser(createStudentDTO));
-        Student student = new Student();
-        student.setUser(user);
-        return StudentMapper.INSTANCE.toStudentDTO(this.studentRepository.save(student));
-    }
 
     /**
      * Finds a student by ID.
