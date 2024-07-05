@@ -14,9 +14,9 @@ public interface CourseRepository extends CrudRepository<Course, UUID> {
 
     List<Course> findByTitleContainingIgnoreCase(String title);
 
-    @Query("SELECT DISTINCT c  FROM Course c JOIN c.tags t WHERE LOWER(t) IN :tags")
+    @Query("SELECT DISTINCT c FROM Course c JOIN c.tags t WHERE LOWER(t) IN :tags")
     List<Course> findByTagsContainingIgnoreCase(@Param("tags") List<String> tags);
 
-    @Query("SELECT DISTINCT c  FROM Course c JOIN c.tags t WHERE LOWER(c.title) LIKE LOWER(CONCAT('%', :title, '%')) AND LOWER(t) IN :tags")
-    List<Course> findByTitleContainingIgnoreCaseAndTagsContainingIgnoreCase(@Param("title") String title,@Param("tags") List<String> tags);
+    @Query("SELECT DISTINCT c FROM Course c JOIN c.tags t WHERE LOWER(c.title) LIKE LOWER(CONCAT('%', :title, '%')) AND LOWER(t) IN :tags")
+    List<Course> findByTitleContainingIgnoreCaseAndTagsContainingIgnoreCase(@Param("title") String title, @Param("tags") List<String> tags);
 }
