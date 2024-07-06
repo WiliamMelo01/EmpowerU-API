@@ -19,4 +19,7 @@ public interface CourseRepository extends CrudRepository<Course, UUID> {
 
     @Query("SELECT DISTINCT c FROM Course c JOIN c.tags t WHERE LOWER(c.title) LIKE LOWER(CONCAT('%', :title, '%')) AND LOWER(t) IN :tags")
     List<Course> findByTitleContainingIgnoreCaseAndTagsContainingIgnoreCase(@Param("title") String title, @Param("tags") List<String> tags);
+
+    @Query("SELECT CASE WHEN c.professor.id = :ownerId THEN TRUE ELSE FALSE END FROM Course c WHERE c.id = :courseId")
+    boolean isTheOwner(@Param("courseId") UUID courseId, @Param("ownerId") UUID ownerId);
 }

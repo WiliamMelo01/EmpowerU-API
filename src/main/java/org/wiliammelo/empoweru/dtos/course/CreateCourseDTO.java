@@ -29,7 +29,4 @@ public class CreateCourseDTO {
     @Size(max = 10, message = "At least most tag is required.")
     private List<String> tags;
 
-    @org.hibernate.validator.constraints.UUID(message = "Professor ID must be a valid UUID.", allowEmpty = false, allowNil = false)
-    @NotNull(message = "Professor ID is required.")
-    private String professorId;
 }

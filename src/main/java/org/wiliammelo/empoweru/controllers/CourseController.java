@@ -4,13 +4,16 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.dtos.CustomResponse;
 import org.wiliammelo.empoweru.dtos.course.CourseDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
 import org.wiliammelo.empoweru.dtos.course.UpdateCourseDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
+import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
+import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.services.CourseService;
 
 import java.util.List;
@@ -54,17 +57,20 @@ public class CourseController {
 
     @PostMapping("/")
     public ResponseEntity<CourseDTO> create(@Valid @RequestBody CreateCourseDTO createCourseDTO) throws UserNotFoundException {
-        return new ResponseEntity<>(this.courseService.create(createCourseDTO), HttpStatus.CREATED);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(this.courseService.create(createCourseDTO, user.getId()), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID id, @RequestBody @Valid UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException {
-        return new ResponseEntity<>(this.courseService.update(id, updateCourseDTO), HttpStatus.OK);
+    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID courseId, @RequestBody @Valid UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException, UnauthorizedException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(this.courseService.update(courseId, updateCourseDTO, user.getId()), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CustomResponse> remove(@PathVariable("id") UUID id) throws CourseNotFoundException {
-        return new ResponseEntity<>(new CustomResponse(this.courseService.delete(id), HttpStatus.OK.value()), HttpStatus.OK);
+    public ResponseEntity<CustomResponse> remove(@PathVariable("id") UUID courseId) throws CourseNotFoundException, UnauthorizedException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(new CustomResponse(this.courseService.delete(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
     }
 
 

@@ -72,6 +72,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Handles exceptions of type UnauthorizedException.
+     * Maps the exception to an HTTP NOT FOUND response status.
+     *
+     * @param ex The caught UnauthorizedException.
+     * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<CustomResponse> handleVideoUnauthorizedException(UnauthorizedException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.UNAUTHORIZED);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 
