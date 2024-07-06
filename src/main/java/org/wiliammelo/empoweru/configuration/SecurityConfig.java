@@ -23,7 +23,7 @@ public class SecurityConfig {
 
     private static final String ADMIN_ROLE = "ADMIN";
     private static final String STUDENT_ROLE = "STUDENT";
-    private static final String PROFESSOR_ROLE = "STUDENT";
+    private static final String PROFESSOR_ROLE = "PROFESSOR";
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
