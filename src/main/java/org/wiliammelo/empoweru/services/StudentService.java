@@ -57,7 +57,7 @@ public class StudentService {
     }
 
     /**
-     * Deletes a student by ID.
+     * Deletes a student based on the ID.
      *
      * @param id The UUID of the student to delete.
      * @return A confirmation message.
@@ -68,28 +68,44 @@ public class StudentService {
     public String deleteById(UUID id) throws UserNotFoundException {
         Student student = this.studentRepository.findById(id)
                 .orElseThrow(StudentNotFoundException::new);
-        this.studentRepository.delete(student);
+
         this.userService.deleteById(student.getUser().getId());
+        this.studentRepository.delete(student);
         return "Student with ID: " + id + " deleted successfully.";
+    }
+
+    /**
+     * Deletes a student based on the user object.
+     *
+     * @param userId The id of the user to be deleted.
+     * @return A confirmation message.
+     * @throws UserNotFoundException if the user is not found.
+     */
+    @CacheEvict(value = "student", allEntries = true)
+    @Transactional
+    public String delete(UUID userId) throws UserNotFoundException {
+        Student student = this.studentRepository.findByUserId(userId);
+
+        this.userService.deleteById(userId);
+        this.studentRepository.delete(student);
+        return "Student with ID: " + student.getId() + " deleted successfully.";
     }
 
     /**
      * Updates a student's information with the provided {@link UpdateStudentDTO} object.
      *
-     * @param id               The UUID of the student to update.
+     * @param userId           The id of the user to be updated.
      * @param updateStudentDTO Data transfer object containing the updated student's information.
      * @return The updated student as a {@link StudentDTO}.
      * @throws StudentNotFoundException if the student is not found.
      */
     @CacheEvict(value = "student", allEntries = true)
     @Transactional
-    public StudentDTO update(UUID id, UpdateStudentDTO updateStudentDTO) throws StudentNotFoundException {
-        Student student = this.studentRepository.findById(id)
-                .orElseThrow(StudentNotFoundException::new);
+    public StudentDTO update(UUID userId, UpdateStudentDTO updateStudentDTO) throws StudentNotFoundException {
+        Student student = this.studentRepository.findByUserId(userId);
 
         User user = student.getUser();
         user.setName(updateStudentDTO.getName());
-        user.setEmail(updateStudentDTO.getEmail());
         user.setGender(updateStudentDTO.getGender());
 
         return StudentMapper.INSTANCE.toStudentDTO(studentRepository.save(student));

@@ -4,10 +4,12 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.dtos.student.UpdateStudentDTO;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
+import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.services.StudentService;
 
 import java.util.List;
@@ -20,7 +22,7 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<StudentDTO>> getAll() {
         return new ResponseEntity<>(this.studentService.findAll(), HttpStatus.OK);
     }
@@ -30,14 +32,22 @@ public class StudentController {
         return new ResponseEntity<>(this.studentService.findById(id), HttpStatus.OK);
     }
 
+    // ADMIN
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable UUID id) throws UserNotFoundException {
+    public ResponseEntity<String> deleteById(@PathVariable UUID id) throws UserNotFoundException {
         return new ResponseEntity<>(this.studentService.deleteById(id), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<StudentDTO> update(@PathVariable UUID id, @RequestBody @Valid UpdateStudentDTO updateStudentDTO) throws UserNotFoundException {
-        return new ResponseEntity<>(this.studentService.update(id, updateStudentDTO), HttpStatus.OK);
+    @DeleteMapping("/")
+    public ResponseEntity<String> delete() throws UserNotFoundException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(this.studentService.delete(user.getId()), HttpStatus.OK);
+    }
+
+    @PutMapping("/")
+    public ResponseEntity<StudentDTO> update(@RequestBody @Valid UpdateStudentDTO updateStudentDTO) throws UserNotFoundException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(this.studentService.update(user.getId(), updateStudentDTO), HttpStatus.OK);
     }
 
 }

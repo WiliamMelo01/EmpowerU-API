@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.UpdateProfessorDTO;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
+import org.wiliammelo.empoweru.models.User;
+import org.wiliammelo.empoweru.services.JWTService;
 import org.wiliammelo.empoweru.services.ProfessorService;
 
 import java.util.List;
@@ -20,7 +22,7 @@ public class ProfessorController {
 
     private final ProfessorService professorService;
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<ProfessorDTO>> getAll() {
         return new ResponseEntity<>(this.professorService.findAll(), HttpStatus.OK);
     }
@@ -30,14 +32,21 @@ public class ProfessorController {
         return new ResponseEntity<>(this.professorService.findById(id), HttpStatus.OK);
     }
 
+    @DeleteMapping("/")
+    public ResponseEntity<String> delete() throws UserNotFoundException {
+        User user = JWTService.getUserFromAuthContext();
+        return new ResponseEntity<>(this.professorService.delete(user.getId()), HttpStatus.OK);
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable UUID id) throws UserNotFoundException {
+    public ResponseEntity<String> deleteById(@PathVariable UUID id) throws UserNotFoundException {
         return new ResponseEntity<>(this.professorService.deleteById(id), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ProfessorDTO> update(@PathVariable UUID id, @RequestBody @Valid UpdateProfessorDTO updateStudentDTO) throws UserNotFoundException {
-        return new ResponseEntity<>(this.professorService.update(id, updateStudentDTO), HttpStatus.OK);
+    @PutMapping("/")
+    public ResponseEntity<ProfessorDTO> update(@RequestBody @Valid UpdateProfessorDTO updateStudentDTO) throws UserNotFoundException {
+        User user = JWTService.getUserFromAuthContext();
+        return new ResponseEntity<>(this.professorService.update(user.getId(), updateStudentDTO), HttpStatus.OK);
     }
 
 }

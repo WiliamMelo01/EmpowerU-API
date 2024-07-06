@@ -15,4 +15,7 @@ public interface ProfessorRepository extends CrudRepository<Professor, UUID> {
     @Query("SELECT p FROM Professor p WHERE p.user.email = :email")
     Optional<Professor> findByEmail(@Param("email") String email);
 
+    @Query("SELECT p FROM Professor p WHERE p.user.id = :userId")
+    Professor findByUserId(@Param("userId") UUID id);
+
 }

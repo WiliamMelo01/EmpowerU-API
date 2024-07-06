@@ -21,6 +21,10 @@ public class SecurityConfig {
 
     private final SecurityFilter securityFilter;
 
+    private static final String ADMIN_ROLE = "ADMIN";
+    private static final String STUDENT_ROLE = "STUDENT";
+    private static final String PROFESSOR_ROLE = "STUDENT";
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -42,32 +46,38 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
                                 // Require ADMIN role for admin registration
-                                .requestMatchers(HttpMethod.POST, "/auth/register/admin").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/auth/register/admin").hasRole(ADMIN_ROLE)
 
-                                // Restrict operations on students and professors based on specific roles
-                                .requestMatchers("/student/**").hasAnyRole("STUDENT", "ADMIN")
+                                // Restrict operations on professors based on specific roles
                                 .requestMatchers(HttpMethod.GET, "/professor/{id}").permitAll()
-                                .requestMatchers(HttpMethod.PUT, "/professor/{id}").hasRole("PROFESSOR")
-                                .requestMatchers(HttpMethod.DELETE, "/professor/{id}").hasAnyRole("PROFESSOR", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/professor/").hasRole(ADMIN_ROLE)
+                                .requestMatchers(HttpMethod.PUT, "/professor/").hasRole(PROFESSOR_ROLE)
+                                .requestMatchers(HttpMethod.DELETE, "/professor/").hasRole(PROFESSOR_ROLE)
+                                .requestMatchers(HttpMethod.DELETE, "/professor/{id}").hasRole(ADMIN_ROLE)
+
+                                // Restrict operations on students based on specific roles
+                                .requestMatchers(HttpMethod.GET, "/student/{id}").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/student/").hasRole(ADMIN_ROLE)
+                                .requestMatchers(HttpMethod.PUT, "/student/").hasRole(STUDENT_ROLE)
+                                .requestMatchers(HttpMethod.DELETE, "/student/").hasRole(STUDENT_ROLE)
+                                .requestMatchers(HttpMethod.DELETE, "/student/{id}").hasRole(ADMIN_ROLE)
 
                                 // Allow access to course details and operations with role restrictions
                                 .requestMatchers(HttpMethod.GET, "/course/{id}").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/course/").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/course/").hasRole("PROFESSOR")
-                                .requestMatchers(HttpMethod.DELETE, "/course/").hasAnyRole("PROFESSOR", "ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/course/").hasAnyRole("PROFESSOR", "ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/course/").hasRole(PROFESSOR_ROLE)
+                                .requestMatchers(HttpMethod.DELETE, "/course/{id}").hasAnyRole(PROFESSOR_ROLE, ADMIN_ROLE)
+                                .requestMatchers(HttpMethod.PUT, "/course/{id}").hasAnyRole(PROFESSOR_ROLE, ADMIN_ROLE)
 
                                 // Allow access to video details and operations with role restrictions
                                 .requestMatchers(HttpMethod.GET, "/video/{courseId}").permitAll()
-                                .requestMatchers(HttpMethod.PUT, "/video/{courseId}").hasAnyRole("PROFESSOR", "ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/video/{courseId}").hasAnyRole("PROFESSOR", "ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/video/{courseId}").hasAnyRole(PROFESSOR_ROLE, ADMIN_ROLE)
+                                .requestMatchers(HttpMethod.DELETE, "/video/{videoId}").hasAnyRole(PROFESSOR_ROLE, ADMIN_ROLE)
 
                                 // Restrict all other requests to authenticated users
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                // Disable frame options to allow H2 console to load
-                .headers().frameOptions().disable().and()
                 .build();
     }
 
