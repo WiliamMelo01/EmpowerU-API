@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.wiliammelo.empoweru.dtos.CustomResponse;
@@ -12,7 +13,9 @@ import org.wiliammelo.empoweru.dtos.video.UpdateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.VideoDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
 import org.wiliammelo.empoweru.exceptions.InvalidFileTypeException;
+import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
 import org.wiliammelo.empoweru.exceptions.VideoNotFoundException;
+import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.services.VideoService;
 
 import java.io.IOException;
@@ -33,14 +36,18 @@ public class VideoController {
     })
     public ResponseEntity<Object> create(@RequestPart("video") @Valid CreateVideoDTO createVideoDTO,
                                          @RequestPart("file") MultipartFile file) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         try {
-            return new ResponseEntity<>(this.videoService.create(createVideoDTO, file), HttpStatus.CREATED);
+            return new ResponseEntity<>(this.videoService.create(createVideoDTO, file, user.getId()), HttpStatus.CREATED);
         } catch (CourseNotFoundException invalidFileTypeException) {
             return new ResponseEntity<>(new CustomResponse(invalidFileTypeException.getMessage(), HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
         } catch (IOException invalidFileTypeException) {
             return new ResponseEntity<>(new CustomResponse("Error while saving video.Verify the file or try again later.", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (InvalidFileTypeException invalidFileTypeException) {
             return new ResponseEntity<>(new CustomResponse(invalidFileTypeException.getMessage(), HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
+        } catch (UnauthorizedException unauthorizedException) {
+            return new ResponseEntity<>(new CustomResponse(unauthorizedException.getMessage(), HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
         } catch (Exception ex) {
             return new ResponseEntity<>(new CustomResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -52,9 +59,10 @@ public class VideoController {
     }
 
     @DeleteMapping("/{videoId}")
-    public ResponseEntity<CustomResponse> delete(@PathVariable("videoId") UUID courseId) throws CourseNotFoundException {
+    public ResponseEntity<CustomResponse> delete(@PathVariable("videoId") UUID courseId) throws CourseNotFoundException, UnauthorizedException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        String message = this.videoService.delete(courseId);
+        String message = this.videoService.delete(courseId, user.getId());
 
         return new ResponseEntity<>(new CustomResponse(message, HttpStatus.OK.value()), HttpStatus.OK);
     }
@@ -62,9 +70,10 @@ public class VideoController {
     @PutMapping("/{videoId}")
     public ResponseEntity<VideoDTO> update(@RequestPart("video") @Valid UpdateVideoDTO updateVideoDTO,
                                            @RequestPart("file") MultipartFile file,
-                                           @PathVariable("videoId") UUID courseId) throws CourseNotFoundException, VideoNotFoundException, IOException {
+                                           @PathVariable("videoId") UUID courseId) throws CourseNotFoundException, VideoNotFoundException, IOException, UnauthorizedException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        VideoDTO video = this.videoService.update(courseId, updateVideoDTO, file);
+        VideoDTO video = this.videoService.update(courseId, updateVideoDTO, file, user.getId());
 
         return new ResponseEntity<>(video, HttpStatus.OK);
     }
