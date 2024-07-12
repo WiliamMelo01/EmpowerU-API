@@ -1,15 +1,13 @@
 package org.wiliammelo.empoweru.dtos.course;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
 public class CourseDTO implements Serializable {
 
     private UUID id;
@@ -23,5 +21,7 @@ public class CourseDTO implements Serializable {
     private ProfessorDTO professor;
 
     private int videosCount;
+
+    private long durationInSeconds;
 
 }

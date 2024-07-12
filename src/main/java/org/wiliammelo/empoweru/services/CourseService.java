@@ -64,8 +64,14 @@ public class CourseService {
     @Cacheable(value = "course", key = "#root.method.name")
     public List<CourseDTO> findAll() {
         List<Course> courseList = (List<Course>) this.courseRepository.findAll();
+
         return courseList.stream()
-                .map(CourseMapper.INSTANCE::toCourseDto)
+                .map(course -> {
+                    CourseDTO dto = CourseMapper.INSTANCE.toCourseDto(course);
+                    dto.setVideosCount(course.getVideos().size());
+                    dto.setDurationInSeconds(course.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -80,7 +86,10 @@ public class CourseService {
     public CourseDTO findById(UUID id) throws CourseNotFoundException {
         Course course = this.courseRepository.findById(id)
                 .orElseThrow(CourseNotFoundException::new);
-        return CourseMapper.INSTANCE.toCourseDto(course);
+        CourseDTO dto = CourseMapper.INSTANCE.toCourseDto(course);
+        dto.setVideosCount(course.getVideos().size());
+        dto.setDurationInSeconds(course.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum());
+        return dto;
     }
 
     /**
