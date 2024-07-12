@@ -63,7 +63,7 @@ public class VideoService {
      * @throws InvalidFileTypeException If the uploaded file type is not allowed.
      * @throws UnauthorizedException    If the requester is not authorized to perform the operation.
      */
-    @CacheEvict(value = "video", allEntries = true)
+    @CacheEvict(value = {"video", "course"}, allEntries = true)
     public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file, UUID requesterId) throws IOException, CourseNotFoundException, InvalidFileTypeException, UnauthorizedException {
 
         if (!ALLOWED_FILE_TYPES.contains(file.getContentType())) {
@@ -141,7 +141,7 @@ public class VideoService {
      * @throws UnauthorizedException   If the requester is not authorized to perform the operation.
      */
 
-    @CacheEvict(value = "video", allEntries = true)
+    @CacheEvict(value = {"video", "course"}, allEntries = true)
     @Transactional
     public String delete(UUID courseId, UUID requesterId) throws CourseNotFoundException, UnauthorizedException {
         Video video = this.videoRepository.findById(courseId).orElseThrow(CourseNotFoundException::new);
@@ -183,7 +183,7 @@ public class VideoService {
      * @throws IOException             If an error occurs during file upload.
      * @throws UnauthorizedException   If the requester is not authorized to perform the operation.
      */
-    @CacheEvict(value = "video", allEntries = true)
+    @CacheEvict(value = {"video", "course"}, allEntries = true)
     public VideoDTO update(UUID courseId, UpdateVideoDTO updateVideoDTO, MultipartFile file, UUID requesterId) throws CourseNotFoundException, VideoNotFoundException, IOException, UnauthorizedException {
         Course course = this.courseRepository.findById(UUID.fromString(updateVideoDTO.getCourseId()))
                 .orElseThrow(CourseNotFoundException::new);
