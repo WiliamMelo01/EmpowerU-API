@@ -16,6 +16,7 @@ import org.wiliammelo.empoweru.repositories.ProfessorRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing professors.
@@ -49,10 +50,10 @@ public class ProfessorService {
      *
      * @return A list of {@link ProfessorDTO} representing all professors in the repository.
      */
-    @Cacheable(value = "professor")
+    @Cacheable(value = "professor", key = "#root.method.name")
     public List<ProfessorDTO> findAll() {
         List<Professor> professors = (List<Professor>) professorRepository.findAll();
-        return professors.stream().map(ProfessorMapper.INSTANCE::toProfessorDTO).toList();
+        return professors.stream().map(ProfessorMapper.INSTANCE::toProfessorDTO).collect(Collectors.toList());
     }
 
     /**

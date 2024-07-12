@@ -16,6 +16,7 @@ import org.wiliammelo.empoweru.repositories.StudentRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing students.
@@ -50,10 +51,10 @@ public class StudentService {
      *
      * @return A list of all students as {@link StudentDTO}s.
      */
-    @Cacheable(value = "student")
+    @Cacheable(value = "student", key = "#root.method.name")
     public List<StudentDTO> findAll() {
         List<Student> students = (List<Student>) this.studentRepository.findAll();
-        return students.stream().map(StudentMapper.INSTANCE::toStudentDTO).toList();
+        return students.stream().map(StudentMapper.INSTANCE::toStudentDTO).collect(Collectors.toList());
     }
 
     /**

@@ -21,6 +21,7 @@ import org.wiliammelo.empoweru.repositories.VideoRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing courses.
@@ -60,12 +61,12 @@ public class CourseService {
      *
      * @return A list of {@link CourseDTO} representing all courses in the repository.
      */
-    @Cacheable("course")
+    @Cacheable(value = "course", key = "#root.method.name")
     public List<CourseDTO> findAll() {
         List<Course> courseList = (List<Course>) this.courseRepository.findAll();
         return courseList.stream()
                 .map(CourseMapper.INSTANCE::toCourseDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
@@ -91,7 +92,7 @@ public class CourseService {
     @Cacheable(value = "course", key = "#title")
     public List<CourseDTO> findByTitle(String title) {
         List<Course> courseList = this.courseRepository.findByTitleContainingIgnoreCase(title);
-        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).toList();
+        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).collect(Collectors.toList());
     }
 
     /**
@@ -104,7 +105,7 @@ public class CourseService {
     public List<CourseDTO> findByTags(List<String> tags) {
         List<String> tagsInLowerCase = tags.stream().map(String::toLowerCase).toList();
         List<Course> courseList = this.courseRepository.findByTagsContainingIgnoreCase(tagsInLowerCase);
-        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).toList();
+        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).collect(Collectors.toList());
     }
 
     /**
@@ -118,7 +119,7 @@ public class CourseService {
     public List<CourseDTO> findByTitleAndTags(String title, List<String> tags) {
         List<String> tagsInLowerCase = tags.stream().map(String::toLowerCase).toList();
         List<Course> courseList = this.courseRepository.findByTitleContainingIgnoreCaseAndTagsContainingIgnoreCase(title, tagsInLowerCase);
-        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).toList();
+        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).collect(Collectors.toList());
     }
 
     /**

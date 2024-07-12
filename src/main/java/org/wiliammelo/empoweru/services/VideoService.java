@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing video-related operations.
@@ -127,7 +128,7 @@ public class VideoService {
 
         return this.videoRepository.findAllByCourseOrderByDisplayOrder(course).stream()
                 .map(VideoMapper.INSTANCE::toVideoDTO)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
