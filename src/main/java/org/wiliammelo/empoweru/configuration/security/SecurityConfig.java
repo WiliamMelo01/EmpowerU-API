@@ -63,6 +63,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/course/").hasRole(PROFESSOR_ROLE)
                                 .requestMatchers(HttpMethod.DELETE, "/course/{id}").hasAnyRole(PROFESSOR_ROLE, ADMIN_ROLE)
                                 .requestMatchers(HttpMethod.PUT, "/course/{id}").hasAnyRole(PROFESSOR_ROLE, ADMIN_ROLE)
+                                .requestMatchers(HttpMethod.POST, "/course/disenroll/{id}").hasRole(STUDENT_ROLE)
+                                .requestMatchers(HttpMethod.POST, "/course/enroll/{id}").hasRole(STUDENT_ROLE)
 
                                 // Allow access to video details and operations with role restrictions
                                 .requestMatchers(HttpMethod.GET, "/video/{courseId}").hasRole(ADMIN_ROLE)

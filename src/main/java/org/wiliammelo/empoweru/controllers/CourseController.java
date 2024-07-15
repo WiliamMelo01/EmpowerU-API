@@ -25,10 +25,16 @@ public class CourseController {
     private final CourseService courseService;
 
     @GetMapping("/public/{id}")
-    public ResponseEntity<Object> findById(
+    public ResponseEntity<Object> findByIdPublic(
             @PathVariable("id") UUID id,
             @RequestParam(required = false, defaultValue = "false") Boolean includeDetails) throws CourseNotFoundException {
-        return new ResponseEntity<>(this.courseService.findById(id, includeDetails), HttpStatus.OK);
+        return new ResponseEntity<>(this.courseService.findByIdPublic(id, includeDetails), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> findById(@PathVariable("id") UUID id) throws CourseNotFoundException, UserNotFoundException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(this.courseService.findByIdAuthenticated(id, user.getId()), HttpStatus.OK);
     }
 
     @GetMapping("/public/")

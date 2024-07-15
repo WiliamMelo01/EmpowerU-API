@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.wiliammelo.empoweru.dtos.section.CreateSectionDTO;
+import org.wiliammelo.empoweru.dtos.section.PublicSectionDetailedDTO;
 import org.wiliammelo.empoweru.dtos.section.SectionDTO;
-import org.wiliammelo.empoweru.dtos.section.SectionDetailedDTO;
 import org.wiliammelo.empoweru.models.Section;
 
 @Mapper
@@ -19,5 +19,5 @@ public interface SectionMapper {
     SectionDTO toSectionDTO(Section section);
 
     @Mapping(target = "videos", source = "videos")
-    SectionDetailedDTO toSectionDetailedDTO(Section section);
+    PublicSectionDetailedDTO toSectionDetailedDTO(Section section);
 }

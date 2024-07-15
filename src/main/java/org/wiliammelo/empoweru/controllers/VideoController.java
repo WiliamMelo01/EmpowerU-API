@@ -13,6 +13,7 @@ import org.wiliammelo.empoweru.dtos.video.UpdateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.VideoDTO;
 import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.models.User;
+import org.wiliammelo.empoweru.models.VideoWatched;
 import org.wiliammelo.empoweru.services.VideoService;
 
 import java.io.IOException;
@@ -68,4 +69,11 @@ public class VideoController {
 
         return new ResponseEntity<>(video, HttpStatus.OK);
     }
+
+    @PostMapping("/mark-as-watched/{id}")
+    public ResponseEntity<VideoWatched> markAsWatched(@PathVariable("id") UUID videoId) throws UserNotFoundException, VideoNotFoundException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(this.videoService.markAsWatched(videoId, user.getId()), HttpStatus.OK);
+    }
+    
 }

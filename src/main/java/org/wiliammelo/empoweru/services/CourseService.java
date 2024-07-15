@@ -5,15 +5,13 @@ import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.wiliammelo.empoweru.dtos.course.CourseDTO;
-import org.wiliammelo.empoweru.dtos.course.CourseDetailedDTO;
-import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
-import org.wiliammelo.empoweru.dtos.course.UpdateCourseDTO;
+import org.wiliammelo.empoweru.dtos.course.*;
 import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.mappers.CourseMapper;
 import org.wiliammelo.empoweru.models.Course;
 import org.wiliammelo.empoweru.models.Professor;
 import org.wiliammelo.empoweru.models.Student;
+import org.wiliammelo.empoweru.models.VideoWatched;
 import org.wiliammelo.empoweru.repositories.*;
 
 import java.util.List;
@@ -35,6 +33,8 @@ public class CourseService {
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
+    private final VideoWatchedRepository videoWatchedRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     /**
      * Creates a new course based on the provided {@link CreateCourseDTO} object.
@@ -81,12 +81,12 @@ public class CourseService {
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      */
     @Cacheable(value = "course", key = "#id.toString()+#includeDetails")
-    public Object findById(UUID id, boolean includeDetails) throws CourseNotFoundException {
+    public Object findByIdPublic(UUID id, boolean includeDetails) throws CourseNotFoundException {
         Course course = this.courseRepository.findById(id)
                 .orElseThrow(CourseNotFoundException::new);
 
         if (includeDetails) {
-            CourseDetailedDTO dto = CourseMapper.INSTANCE.toCourseDetailedDto(course);
+            PublicCourseDetailedDTO dto = CourseMapper.INSTANCE.toPublicCourseDetailedDto(course);
             dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
             dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
             return dto;
@@ -95,6 +95,37 @@ public class CourseService {
         CourseDTO dto = CourseMapper.INSTANCE.toCourseDto(course);
         dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
         dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
+        return dto;
+    }
+
+    /**
+     * Retrieves detailed information about a course for an authenticated user.
+     *
+     * @param id     The UUID of the course to find.
+     * @param userId The UUID of the authenticated user (student).
+     * @return A {@link AuthenticatedCourseDetailedDTO} object containing detailed information about the course, including watched videos and enrollment status.
+     * @throws CourseNotFoundException if the course with the specified ID does not exist.
+     * @throws UserNotFoundException   if the student with the specified ID does not exist.
+     */
+    @Cacheable(value = "course", key = "#id.toString()+#userId.toString()")
+    public Object findByIdAuthenticated(UUID id, UUID userId) throws CourseNotFoundException, UserNotFoundException {
+        Student student = this.studentRepository.findByUserId(userId);
+
+        if (student == null) {
+            throw new UserNotFoundException();
+        }
+
+        Course course = this.courseRepository.findById(id)
+                .orElseThrow(CourseNotFoundException::new);
+
+        List<VideoWatched> videoWatchedList = videoWatchedRepository.findAllByStudentId(student.getId());
+
+        AuthenticatedCourseDetailedDTO dto = CourseMapper.INSTANCE.toAuthenticatedCourseDetailedDTO(course);
+        dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
+        dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
+        dto.getSections().forEach(section -> section.getVideos().forEach(video -> video.setWatched(videoWatchedList.stream().anyMatch(vw -> vw.getVideoId().equals(video.getId())))));
+        dto.setEnrolled(enrollmentRepository.isStudentEnrolled(id, student.getId()));
+
         return dto;
     }
 
@@ -226,8 +257,8 @@ public class CourseService {
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      * @throws UserNotFoundException   if the student with the specified ID does not exist.
      */
+    @CacheEvict(value = "course", key = "#courseId.toString()+#userId.toString()")
     public String enroll(UUID courseId, UUID userId) throws CourseNotFoundException, UserNotFoundException, UserAlreadyEnrolledException {
-
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
 
@@ -257,6 +288,7 @@ public class CourseService {
      * @throws UserNotFoundException    if the student with the specified ID does not exist.
      * @throws UserNotEnrolledException if the student is not enrolled in the course.
      */
+    @CacheEvict(value = "course", key = "#courseId.toString()+#userId.toString()")
     public String disenroll(UUID courseId, UUID userId) throws CourseNotFoundException, UserNotFoundException, UserNotEnrolledException {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);

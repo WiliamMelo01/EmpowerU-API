@@ -11,9 +11,7 @@ import org.wiliammelo.empoweru.dtos.video.VideoDTO;
 import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.file_upload.FileUploader;
 import org.wiliammelo.empoweru.mappers.VideoMapper;
-import org.wiliammelo.empoweru.models.Professor;
-import org.wiliammelo.empoweru.models.Section;
-import org.wiliammelo.empoweru.models.Video;
+import org.wiliammelo.empoweru.models.*;
 import org.wiliammelo.empoweru.repositories.*;
 
 import java.io.IOException;
@@ -38,6 +36,8 @@ public class VideoService {
     private final UserRepository userRepository;
     private final ProfessorRepository professorRepository;
     private final SectionRepository sectionRepository;
+    private final VideoWatchedRepository videoWatchedRepository;
+    private final StudentRepository studentRepository;
 
     private static final List<String> ALLOWED_FILE_TYPES = Arrays.asList("video/mp4", "video/mkv");
     private static final String UNAUTHORIZED_MESSAGE = "You're not the owner of this course.";
@@ -158,6 +158,22 @@ public class VideoService {
         video.setUrl(fileUploader.upload(file));
 
         return VideoMapper.INSTANCE.toVideoDTO(videoRepository.save(video));
+    }
+
+    @CacheEvict(value = "course", allEntries = true)
+    public VideoWatched markAsWatched(UUID videoId, UUID userId) throws VideoNotFoundException, UserNotFoundException {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(VideoNotFoundException::new);
+        Student student = studentRepository.findByUserId(userId);
+
+        if (student == null) {
+            throw new StudentNotFoundException();
+        }
+
+        VideoWatched videoWatched = new VideoWatched();
+        videoWatched.setStudentId(student.getId());
+        videoWatched.setVideoId(video.getId());
+        return videoWatchedRepository.save(videoWatched);
     }
 
     /**
