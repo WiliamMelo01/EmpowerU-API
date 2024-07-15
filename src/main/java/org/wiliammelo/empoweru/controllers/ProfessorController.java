@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.wiliammelo.empoweru.configuration.security.JWTService;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.UpdateProfessorDTO;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.models.User;
-import org.wiliammelo.empoweru.services.JWTService;
 import org.wiliammelo.empoweru.services.ProfessorService;
 
 import java.util.List;

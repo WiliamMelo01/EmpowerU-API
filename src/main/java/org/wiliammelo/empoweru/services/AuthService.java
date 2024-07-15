@@ -8,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.wiliammelo.empoweru.configuration.security.JWTService;
 import org.wiliammelo.empoweru.dtos.LoginDTO;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;

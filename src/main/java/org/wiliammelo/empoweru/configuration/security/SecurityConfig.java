@@ -1,4 +1,4 @@
-package org.wiliammelo.empoweru.configuration;
+package org.wiliammelo.empoweru.configuration.security;
 
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;

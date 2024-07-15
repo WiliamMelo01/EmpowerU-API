@@ -1,4 +1,4 @@
-package org.wiliammelo.empoweru.configuration;
+package org.wiliammelo.empoweru.configuration.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.wiliammelo.empoweru.repositories.UserRepository;
-import org.wiliammelo.empoweru.services.JWTService;
 
 @Component
 @AllArgsConstructor

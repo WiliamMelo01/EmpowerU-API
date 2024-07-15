@@ -1,4 +1,4 @@
-package org.wiliammelo.empoweru.services;
+package org.wiliammelo.empoweru.configuration.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;

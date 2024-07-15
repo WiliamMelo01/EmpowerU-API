@@ -1,4 +1,4 @@
-package org.wiliammelo.empoweru.services;
+package org.wiliammelo.empoweru.configuration.security;
 
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

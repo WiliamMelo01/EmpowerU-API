@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.wiliammelo.empoweru.configuration.security.JWTService;
 import org.wiliammelo.empoweru.dtos.LoginDTO;
 import org.wiliammelo.empoweru.dtos.TokenResponse;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
@@ -17,7 +18,6 @@ import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.exceptions.CustomException;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.services.AuthService;
-import org.wiliammelo.empoweru.services.JWTService;
 
 @RestController
 @RequestMapping("/auth")
