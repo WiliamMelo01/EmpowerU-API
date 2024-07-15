@@ -84,6 +84,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.UNAUTHORIZED);
     }
 
+    /**
+     * Handles exceptions of type SectionNotFoundException.
+     * Maps the exception to an HTTP NOT FOUND response status.
+     *
+     * @param ex The caught SectionNotFoundException.
+     * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
+     */
+    @ExceptionHandler(SectionNotFoundException.class)
+    public ResponseEntity<CustomResponse> handleVideoSectionNotFoundException(SectionNotFoundException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.UNAUTHORIZED);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 

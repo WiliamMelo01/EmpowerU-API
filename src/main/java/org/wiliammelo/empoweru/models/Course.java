@@ -1,6 +1,5 @@
 package org.wiliammelo.empoweru.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,23 +21,16 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(length = 255, nullable = false)
+
     private String title;
 
     @Column(length = 1000, nullable = false)
     private String description;
 
-    private int videosCount;
-
     @ManyToOne
     @JoinColumn(name = "professor_id")
     private Professor professor;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "course")
-    private List<Video> videos;
-
-    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "Enrollments",
@@ -51,5 +43,8 @@ public class Course {
     @CollectionTable(name = "course_tags", joinColumns = @JoinColumn(name = "course_id"))
     @Column(name = "tag")
     private List<String> tags;
+
+    @OneToMany(mappedBy = "course")
+    private List<Section> sections;
 
 }
