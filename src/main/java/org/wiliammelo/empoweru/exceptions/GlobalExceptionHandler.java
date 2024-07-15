@@ -74,13 +74,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
      * Handles exceptions of type UnauthorizedException.
-     * Maps the exception to an HTTP NOT FOUND response status.
+     * Maps the exception to an HTTP UNAUTHORIZED response status.
      *
      * @param ex The caught UnauthorizedException.
      * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
      */
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<CustomResponse> handleVideoUnauthorizedException(UnauthorizedException ex) {
+    public ResponseEntity<CustomResponse> handleUnauthorizedException(UnauthorizedException ex) {
         return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.UNAUTHORIZED);
     }
 
@@ -92,8 +92,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
      */
     @ExceptionHandler(SectionNotFoundException.class)
-    public ResponseEntity<CustomResponse> handleVideoSectionNotFoundException(SectionNotFoundException ex) {
-        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<CustomResponse> handleSectionNotFoundException(SectionNotFoundException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handles exceptions of type UserAlreadyEnrolledException.
+     * Maps the exception to an HTTP CONFLICT response status.
+     *
+     * @param ex The caught SectionNotFoundException.
+     * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
+     */
+    @ExceptionHandler(UserAlreadyEnrolledException.class)
+    public ResponseEntity<CustomResponse> handleUserAlreadyEnrolledException(UserAlreadyEnrolledException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.CONFLICT);
+    }
+
+    /**
+     * Handles exceptions of type UserNotEnrolledException.
+     * Maps the exception to an HTTP BAD_REQUEST response status.
+     *
+     * @param ex The caught SectionNotFoundException.
+     * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
+     */
+    @ExceptionHandler(UserNotEnrolledException.class)
+    public ResponseEntity<CustomResponse> handleUserUserNotEnrolledException(UserNotEnrolledException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.BAD_REQUEST);
     }
 
     @Override

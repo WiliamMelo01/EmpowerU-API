@@ -10,9 +10,7 @@ import org.wiliammelo.empoweru.dtos.CustomResponse;
 import org.wiliammelo.empoweru.dtos.course.CourseDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
 import org.wiliammelo.empoweru.dtos.course.UpdateCourseDTO;
-import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
-import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
-import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
+import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.services.CourseService;
 
@@ -73,6 +71,18 @@ public class CourseController {
     public ResponseEntity<CustomResponse> remove(@PathVariable("id") UUID courseId) throws CourseNotFoundException, UnauthorizedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(new CustomResponse(this.courseService.delete(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
+    }
+
+    @PostMapping("/enroll/{id}")
+    public ResponseEntity<CustomResponse> enroll(@PathVariable("id") UUID courseId) throws UserNotFoundException, CourseNotFoundException, UserAlreadyEnrolledException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(new CustomResponse(this.courseService.enroll(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
+    }
+
+    @PostMapping("/disenroll/{id}")
+    public ResponseEntity<CustomResponse> disenroll(@PathVariable("id") UUID courseId) throws UserNotFoundException, CourseNotFoundException, UserNotEnrolledException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(new CustomResponse(this.courseService.disenroll(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
     }
 
 }

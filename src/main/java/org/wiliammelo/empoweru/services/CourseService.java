@@ -9,16 +9,12 @@ import org.wiliammelo.empoweru.dtos.course.CourseDTO;
 import org.wiliammelo.empoweru.dtos.course.CourseDetailedDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
 import org.wiliammelo.empoweru.dtos.course.UpdateCourseDTO;
-import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
-import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
-import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
+import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.mappers.CourseMapper;
 import org.wiliammelo.empoweru.models.Course;
 import org.wiliammelo.empoweru.models.Professor;
-import org.wiliammelo.empoweru.repositories.CourseRepository;
-import org.wiliammelo.empoweru.repositories.ProfessorRepository;
-import org.wiliammelo.empoweru.repositories.UserRepository;
-import org.wiliammelo.empoweru.repositories.VideoRepository;
+import org.wiliammelo.empoweru.models.Student;
+import org.wiliammelo.empoweru.repositories.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +34,7 @@ public class CourseService {
     private final ProfessorRepository professorRepository;
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
 
     /**
      * Creates a new course based on the provided {@link CreateCourseDTO} object.
@@ -218,6 +215,66 @@ public class CourseService {
         this.videoRepository.deleteAllByCourse(course);
         this.courseRepository.delete(course);
         return "Course with id: " + course.getId() + " deleted successfully.";
+    }
+
+    /**
+     * Enrolls a student into a specified course.
+     *
+     * @param courseId The UUID of the course to enroll the student in.
+     * @param userId   The UUID of the student to enroll in the course.
+     * @return A confirmation message indicating the student has been successfully enrolled.
+     * @throws CourseNotFoundException if the course with the specified ID does not exist.
+     * @throws UserNotFoundException   if the student with the specified ID does not exist.
+     */
+    public String enroll(UUID courseId, UUID userId) throws CourseNotFoundException, UserNotFoundException, UserAlreadyEnrolledException {
+
+        Course course = this.courseRepository.findById(courseId)
+                .orElseThrow(CourseNotFoundException::new);
+
+        Student student = this.studentRepository.findByUserId(userId);
+
+        if (student == null) {
+            throw new UserNotFoundException();
+        }
+
+        if (course.getStudents().contains(student)) {
+            throw new UserAlreadyEnrolledException();
+        }
+
+        course.getStudents().add(student);
+
+        courseRepository.save(course);
+        return "Student with id: " + student.getId() + " enrolled successfully.";
+    }
+
+    /**
+     * Disenroll a student from a specific course.
+     *
+     * @param courseId The UUID of the course to disenroll the student from.
+     * @param userId   The UUID of the student to disenroll from the course.
+     * @return A confirmation message indicating the student has been successfully disenrolled.
+     * @throws CourseNotFoundException  if the course with the specified ID does not exist.
+     * @throws UserNotFoundException    if the student with the specified ID does not exist.
+     * @throws UserNotEnrolledException if the student is not enrolled in the course.
+     */
+    public String disenroll(UUID courseId, UUID userId) throws CourseNotFoundException, UserNotFoundException, UserNotEnrolledException {
+        Course course = this.courseRepository.findById(courseId)
+                .orElseThrow(CourseNotFoundException::new);
+
+        Student student = this.studentRepository.findByUserId(userId);
+
+        if (student == null) {
+            throw new UserNotFoundException();
+        }
+
+        boolean removed = course.getStudents().remove(student);
+
+        if (removed) {
+            courseRepository.save(course);
+            return "Student with id: " + student.getId() + " disenrolled successfully.";
+        }
+
+        throw new UserNotEnrolledException();
     }
 
     /**
