@@ -16,8 +16,8 @@ public class UpdateVideoDTO {
     private String title;
 
     @org.hibernate.validator.constraints.UUID(message = "Course ID must be a valid UUID.", allowEmpty = false, allowNil = false)
-    @NotNull(message = "Course ID is required.")
-    private String courseId;
+    @NotNull(message = "Section ID is required.")
+    private String sectionId;
 
     @NotNull(message = "Display order is required.")
     @Min(value = 300, message = "Duration in seconds must be at least 300 (5 minutes).")

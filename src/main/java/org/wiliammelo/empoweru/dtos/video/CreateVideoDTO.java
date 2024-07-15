@@ -18,8 +18,8 @@ public class CreateVideoDTO {
     private String title;
 
     @org.hibernate.validator.constraints.UUID(message = "Course ID must be a valid UUID.", allowEmpty = false, allowNil = false)
-    @NotNull(message = "Course ID is required.")
-    private String courseId;
+    @NotNull(message = "Section ID is required.")
+    private String sectionId;
 
     @NotNull(message = "Display order is required.")
     @Min(value = 1, message = "Display order must be at least 1.")

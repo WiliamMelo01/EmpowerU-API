@@ -3,31 +3,23 @@ package org.wiliammelo.empoweru.services;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.wiliammelo.empoweru.dtos.video.CreateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.UpdateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.VideoDTO;
-import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
-import org.wiliammelo.empoweru.exceptions.InvalidFileTypeException;
-import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
-import org.wiliammelo.empoweru.exceptions.VideoNotFoundException;
+import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.file_upload.FileUploader;
 import org.wiliammelo.empoweru.mappers.VideoMapper;
-import org.wiliammelo.empoweru.models.Course;
 import org.wiliammelo.empoweru.models.Professor;
+import org.wiliammelo.empoweru.models.Section;
 import org.wiliammelo.empoweru.models.Video;
-import org.wiliammelo.empoweru.repositories.CourseRepository;
-import org.wiliammelo.empoweru.repositories.ProfessorRepository;
-import org.wiliammelo.empoweru.repositories.UserRepository;
-import org.wiliammelo.empoweru.repositories.VideoRepository;
+import org.wiliammelo.empoweru.repositories.*;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Service class for managing video-related operations.
@@ -45,6 +37,7 @@ public class VideoService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final ProfessorRepository professorRepository;
+    private final SectionRepository sectionRepository;
 
     private static final List<String> ALLOWED_FILE_TYPES = Arrays.asList("video/mp4", "video/mkv");
     private static final String UNAUTHORIZED_MESSAGE = "You're not the owner of this course.";
@@ -64,47 +57,29 @@ public class VideoService {
      * @throws UnauthorizedException    If the requester is not authorized to perform the operation.
      */
     @CacheEvict(value = {"video", "course"}, allEntries = true)
-    public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file, UUID requesterId) throws IOException, CourseNotFoundException, InvalidFileTypeException, UnauthorizedException {
-
+    public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file, UUID requesterId) throws IOException, CourseNotFoundException, InvalidFileTypeException, UnauthorizedException, SectionNotFoundException {
         if (!ALLOWED_FILE_TYPES.contains(file.getContentType())) {
             throw new InvalidFileTypeException(ALLOWED_FILE_TYPES);
         }
 
-        Course course = this.courseRepository.findById(UUID.fromString(createVideoDTO.getCourseId()))
-                .orElseThrow(CourseNotFoundException::new);
+        Section section = sectionRepository.findById(UUID.fromString(createVideoDTO.getSectionId()))
+                .orElseThrow(SectionNotFoundException::new);
 
-        if (isTheOwner(course.getId(), requesterId)) {
-            return createProcess(createVideoDTO, course, file);
+        if (!isTheOwner(section.getCourse().getId(), requesterId)) {
+            throw new UnauthorizedException(UNAUTHORIZED_MESSAGE);
         }
 
-        if (isAdmin(requesterId)) {
-            return createProcess(createVideoDTO, course, file);
-        }
-
-        throw new UnauthorizedException(UNAUTHORIZED_MESSAGE);
-    }
-
-    /**
-     * Processes the creation of a new video associated with the given course.
-     *
-     * @param createVideoDTO DTO containing video creation details.
-     * @param course         The course to which the video belongs.
-     * @param file           The video file to be uploaded.
-     * @return The created VideoDTO.
-     * @throws IOException If an error occurs during file upload.
-     */
-    private VideoDTO createProcess(CreateVideoDTO createVideoDTO, Course course, MultipartFile file) throws IOException {
         Video video = VideoMapper.INSTANCE.toVideo(createVideoDTO);
-        video.setCourse(course);
+        video.setSection(section);
 
         // Ensure the new order is within valid range
-        int maxOrder = course.getVideos().size() + 1;
+        int maxOrder = section.getVideos().size() + 1;
         if (video.getDisplayOrder() <= 0 || video.getDisplayOrder() > maxOrder) {
             throw new IllegalArgumentException("Invalid display order");
         }
 
         // Adjust the order of existing videos if necessary
-        if (video.getDisplayOrder() <= course.getVideos().size()) {
+        if (video.getDisplayOrder() <= section.getVideos().size()) {
             List<Video> videos = videoRepository.findAllByWithDisplayOrderBiggerThanOrEqual(video.getDisplayOrder());
             incrementDisplayOrder(videos);
         }
@@ -112,23 +87,6 @@ public class VideoService {
         video.setUrl(fileUploader.upload(file));
 
         return VideoMapper.INSTANCE.toVideoDTO(videoRepository.save(video));
-    }
-
-    /**
-     * Finds all videos associated with a given course, ordered by their display order.
-     *
-     * @param courseId The UUID of the course.
-     * @return A list of VideoDTOs.
-     * @throws CourseNotFoundException If the course is not found.
-     */
-    @Cacheable(value = "video", key = "#courseId")
-    public List<VideoDTO> findByCourse(UUID courseId) throws CourseNotFoundException {
-        Course course = this.courseRepository.findById(courseId)
-                .orElseThrow(CourseNotFoundException::new);
-
-        return this.videoRepository.findAllByCourseOrderByDisplayOrder(course).stream()
-                .map(VideoMapper.INSTANCE::toVideoDTO)
-                .collect(Collectors.toList());
     }
 
     /**
@@ -178,48 +136,29 @@ public class VideoService {
      * @param file           The new video file to be uploaded.
      * @param requesterId    The UUID of the requester.
      * @return The updated VideoDTO.
-     * @throws CourseNotFoundException If the associated course is not found.
-     * @throws VideoNotFoundException  If the video to update is not found.
-     * @throws IOException             If an error occurs during file upload.
-     * @throws UnauthorizedException   If the requester is not authorized to perform the operation.
+     * @throws SectionNotFoundException If the associated section is not found.
+     * @throws VideoNotFoundException   If the video to update is not found.
+     * @throws IOException              If an error occurs during file upload.
+     * @throws UnauthorizedException    If the requester is not authorized to perform the operation.
      */
     @CacheEvict(value = {"video", "course"}, allEntries = true)
-    public VideoDTO update(UUID courseId, UpdateVideoDTO updateVideoDTO, MultipartFile file, UUID requesterId) throws CourseNotFoundException, VideoNotFoundException, IOException, UnauthorizedException {
-        Course course = this.courseRepository.findById(UUID.fromString(updateVideoDTO.getCourseId()))
-                .orElseThrow(CourseNotFoundException::new);
+    public VideoDTO update(UUID courseId, UpdateVideoDTO updateVideoDTO, MultipartFile file, UUID requesterId) throws SectionNotFoundException, VideoNotFoundException, IOException, UnauthorizedException {
+        Section section = this.sectionRepository.findById(UUID.fromString(updateVideoDTO.getSectionId()))
+                .orElseThrow(SectionNotFoundException::new);
         Video video = this.videoRepository.findById(courseId)
                 .orElseThrow(VideoNotFoundException::new);
 
-        if (isTheOwner(courseId, requesterId)) {
-            return uploadProcess(video, course, updateVideoDTO, file);
+        if (!isTheOwner(courseId, requesterId)) {
+            throw new UnauthorizedException(UNAUTHORIZED_MESSAGE);
         }
 
-        if (isAdmin(requesterId)) {
-            return uploadProcess(video, course, updateVideoDTO, file);
-        }
-
-        throw new UnauthorizedException(UNAUTHORIZED_MESSAGE);
-    }
-
-    /**
-     * Processes the update of a video's details and re-uploads the video file.
-     *
-     * @param video          The video entity to update.
-     * @param course         The course entity to associate with the video.
-     * @param updateVideoDTO DTO containing updated video details.
-     * @param file           The new video file to be uploaded.
-     * @return The updated VideoDTO.
-     * @throws IOException If an error occurs during file upload.
-     */
-    private VideoDTO uploadProcess(Video video, Course course, UpdateVideoDTO updateVideoDTO, MultipartFile file) throws IOException {
-        video.setCourse(course);
+        video.setSection(section);
         video.setTitle(updateVideoDTO.getTitle());
         video.setDurationInSeconds(updateVideoDTO.getDurationInSeconds());
         video.setUrl(fileUploader.upload(file));
 
         return VideoMapper.INSTANCE.toVideoDTO(videoRepository.save(video));
     }
-
 
     /**
      * Increments the display order of a list of videos.

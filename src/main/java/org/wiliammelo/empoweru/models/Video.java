@@ -30,7 +30,7 @@ public class Video {
     private int displayOrder;
 
     @ManyToOne
-    @JoinColumn(name = "course_id")
-    private Course course;
+    @JoinColumn(name = "section_id")
+    private Section section;
 
 }

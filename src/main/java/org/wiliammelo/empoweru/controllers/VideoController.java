@@ -11,15 +11,11 @@ import org.wiliammelo.empoweru.dtos.CustomResponse;
 import org.wiliammelo.empoweru.dtos.video.CreateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.UpdateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.VideoDTO;
-import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
-import org.wiliammelo.empoweru.exceptions.InvalidFileTypeException;
-import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
-import org.wiliammelo.empoweru.exceptions.VideoNotFoundException;
+import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.services.VideoService;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -40,9 +36,9 @@ public class VideoController {
 
         try {
             return new ResponseEntity<>(this.videoService.create(createVideoDTO, file, user.getId()), HttpStatus.CREATED);
-        } catch (CourseNotFoundException invalidFileTypeException) {
-            return new ResponseEntity<>(new CustomResponse(invalidFileTypeException.getMessage(), HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
-        } catch (IOException invalidFileTypeException) {
+        } catch (SectionNotFoundException sectionNotFoundException) {
+            return new ResponseEntity<>(new CustomResponse(sectionNotFoundException.getMessage(), HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
+        } catch (IOException ioException) {
             return new ResponseEntity<>(new CustomResponse("Error while saving video.Verify the file or try again later.", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (InvalidFileTypeException invalidFileTypeException) {
             return new ResponseEntity<>(new CustomResponse(invalidFileTypeException.getMessage(), HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
@@ -51,11 +47,6 @@ public class VideoController {
         } catch (Exception ex) {
             return new ResponseEntity<>(new CustomResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @GetMapping("/{courseId}")
-    public ResponseEntity<List<VideoDTO>> findByCourseId(@PathVariable("courseId") UUID courseId) throws CourseNotFoundException {
-        return new ResponseEntity<>(this.videoService.findByCourse(courseId), HttpStatus.OK);
     }
 
     @DeleteMapping("/{videoId}")
@@ -70,7 +61,7 @@ public class VideoController {
     @PutMapping("/{videoId}")
     public ResponseEntity<VideoDTO> update(@RequestPart("video") @Valid UpdateVideoDTO updateVideoDTO,
                                            @RequestPart("file") MultipartFile file,
-                                           @PathVariable("videoId") UUID courseId) throws CourseNotFoundException, VideoNotFoundException, IOException, UnauthorizedException {
+                                           @PathVariable("videoId") UUID courseId) throws SectionNotFoundException, VideoNotFoundException, IOException, UnauthorizedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         VideoDTO video = this.videoService.update(courseId, updateVideoDTO, file, user.getId());
