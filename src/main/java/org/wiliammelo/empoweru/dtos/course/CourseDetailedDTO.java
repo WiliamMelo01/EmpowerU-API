@@ -4,11 +4,12 @@ import lombok.Data;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.section.SectionDetailedDTO;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
 @Data
-public class CourseDetailedDTO {
+public class CourseDetailedDTO implements Serializable {
 
     private UUID id;
 

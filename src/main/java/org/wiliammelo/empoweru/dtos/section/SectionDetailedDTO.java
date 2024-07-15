@@ -3,11 +3,12 @@ package org.wiliammelo.empoweru.dtos.section;
 import lombok.Data;
 import org.wiliammelo.empoweru.dtos.video.VideoDTO;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
 @Data
-public class SectionDetailedDTO {
+public class SectionDetailedDTO implements Serializable {
 
     private UUID id;
 
@@ -15,6 +16,6 @@ public class SectionDetailedDTO {
 
     private String description;
 
-    List<VideoDTO> videos;
+    private List<VideoDTO> videos;
 
 }
