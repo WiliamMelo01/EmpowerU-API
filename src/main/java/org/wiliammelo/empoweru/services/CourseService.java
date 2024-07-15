@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.course.CourseDTO;
+import org.wiliammelo.empoweru.dtos.course.CourseDetailedDTO;
 import org.wiliammelo.empoweru.dtos.course.CreateCourseDTO;
 import org.wiliammelo.empoweru.dtos.course.UpdateCourseDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
@@ -68,8 +69,8 @@ public class CourseService {
         return courseList.stream()
                 .map(course -> {
                     CourseDTO dto = CourseMapper.INSTANCE.toCourseDto(course);
-                    dto.setVideosCount(course.getVideos().size());
-                    dto.setDurationInSeconds(course.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum());
+                    dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
+                    dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -82,13 +83,21 @@ public class CourseService {
      * @return The found course as a {@link CourseDTO}.
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      */
-    @Cacheable(value = "course", key = "#id")
-    public CourseDTO findById(UUID id) throws CourseNotFoundException {
+    @Cacheable(value = "course", key = "#id.toString()+#includeDetails")
+    public Object findById(UUID id, boolean includeDetails) throws CourseNotFoundException {
         Course course = this.courseRepository.findById(id)
                 .orElseThrow(CourseNotFoundException::new);
+
+        if (includeDetails) {
+            CourseDetailedDTO dto = CourseMapper.INSTANCE.toCourseDetailedDto(course);
+            dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
+            dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
+            return dto;
+        }
+
         CourseDTO dto = CourseMapper.INSTANCE.toCourseDto(course);
-        dto.setVideosCount(course.getVideos().size());
-        dto.setDurationInSeconds(course.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum());
+        dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
+        dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
         return dto;
     }
 
