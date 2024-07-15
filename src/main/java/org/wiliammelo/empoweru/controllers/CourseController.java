@@ -26,14 +26,14 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/public/{id}")
     public ResponseEntity<Object> findById(
             @PathVariable("id") UUID id,
             @RequestParam(required = false, defaultValue = "false") Boolean includeDetails) throws CourseNotFoundException {
         return new ResponseEntity<>(this.courseService.findById(id, includeDetails), HttpStatus.OK);
     }
 
-    @GetMapping("/")
+    @GetMapping("/public/")
     public ResponseEntity<List<CourseDTO>> findAll(
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "tags", required = false) List<String> tags
@@ -74,6 +74,5 @@ public class CourseController {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(new CustomResponse(this.courseService.delete(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
     }
-
 
 }

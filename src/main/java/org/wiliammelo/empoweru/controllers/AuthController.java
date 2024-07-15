@@ -27,17 +27,17 @@ public class AuthController {
     private final AuthService authService;
     private final JWTService jwtService;
 
-    @PostMapping("/register/student")
+    @PostMapping("/public/register/student")
     public ResponseEntity<StudentDTO> registerStudent(@Valid @RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
         return new ResponseEntity<>(this.authService.registerStudent(createStudentDTO), HttpStatus.CREATED);
     }
 
-    @PostMapping("/register/professor")
+    @PostMapping("/public/register/professor")
     public ResponseEntity<ProfessorDTO> registerProfessor(@Valid @RequestBody CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
         return new ResponseEntity<>(this.authService.registerProfessor(createProfessorDTO), HttpStatus.CREATED);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/public/login")
     public ResponseEntity<TokenResponse> loginProfessor(@Valid @RequestBody LoginDTO loginDTO) throws CustomException {
         String token = authService.login(loginDTO);
         return new ResponseEntity<>(new TokenResponse(token, jwtService.getRole(token)), HttpStatus.OK);
