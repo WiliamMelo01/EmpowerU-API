@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,6 +17,9 @@ import java.util.List;
  */
 @Configuration
 public class SwaggerConfig {
+
+    @Value("${local.server.host}")
+    private String localServerHost;
 
     /**
      * Creates and configures the OpenAPI bean with API metadata and server information.
@@ -35,7 +39,10 @@ public class SwaggerConfig {
                                 .name("Wiliamm Melo")
                                 .url("https://github.com/wiliammelo01")
                         )
-                ).servers(List.of(new Server().url("http://localhost:8080").description("Local server for testing.")));
+                ).servers(List.of(
+                        new Server().url("http://localhost:8080").description("Local server for testing.")
+                        , new Server().url(localServerHost).description("Production server for EmpowerU application."))
+                );
     }
 
 }
