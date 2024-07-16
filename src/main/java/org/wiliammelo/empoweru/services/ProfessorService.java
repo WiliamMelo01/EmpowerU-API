@@ -66,7 +66,8 @@ public class ProfessorService {
     @CacheEvict(value = "professor", allEntries = true)
     @Transactional
     public String delete(UUID userId) throws UserNotFoundException {
-        Professor professor = this.professorRepository.findByUserId(userId);
+        Professor professor = this.professorRepository.findByUserId(userId)
+                .orElseThrow(ProfessorNotFoundException::new);
 
         this.userService.deleteById(userId);
         this.professorRepository.delete(professor);
@@ -102,7 +103,8 @@ public class ProfessorService {
     @CacheEvict(value = "professor", allEntries = true)
     @Transactional
     public ProfessorDTO update(UUID userId, UpdateProfessorDTO professorDTO) throws ProfessorNotFoundException {
-        Professor professor = this.professorRepository.findByUserId(userId);
+        Professor professor = this.professorRepository.findByUserId(userId)
+                .orElseThrow(ProfessorNotFoundException::new);
 
         User user = professor.getUser();
         user.setName(professorDTO.getName());

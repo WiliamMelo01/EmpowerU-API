@@ -68,13 +68,13 @@ public class CourseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID courseId, @RequestBody @Valid UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException, UnauthorizedException {
+    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID courseId, @RequestBody @Valid UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(this.courseService.update(courseId, updateCourseDTO, user.getId()), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CustomResponse> remove(@PathVariable("id") UUID courseId) throws CourseNotFoundException, UnauthorizedException {
+    public ResponseEntity<CustomResponse> remove(@PathVariable("id") UUID courseId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(new CustomResponse(this.courseService.delete(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
     }

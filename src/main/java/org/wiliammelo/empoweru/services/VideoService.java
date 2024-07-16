@@ -57,7 +57,7 @@ public class VideoService {
      * @throws UnauthorizedException    If the requester is not authorized to perform the operation.
      */
     @CacheEvict(value = {"video", "course"}, allEntries = true)
-    public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file, UUID requesterId) throws IOException, CourseNotFoundException, InvalidFileTypeException, UnauthorizedException, SectionNotFoundException {
+    public VideoDTO create(CreateVideoDTO createVideoDTO, MultipartFile file, UUID requesterId) throws IOException, CourseNotFoundException, InvalidFileTypeException, UnauthorizedException, SectionNotFoundException, ProfessorNotFoundException {
         if (!ALLOWED_FILE_TYPES.contains(file.getContentType())) {
             throw new InvalidFileTypeException(ALLOWED_FILE_TYPES);
         }
@@ -101,7 +101,7 @@ public class VideoService {
 
     @CacheEvict(value = {"video", "course"}, allEntries = true)
     @Transactional
-    public String delete(UUID courseId, UUID requesterId) throws CourseNotFoundException, UnauthorizedException {
+    public String delete(UUID courseId, UUID requesterId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         Video video = this.videoRepository.findById(courseId).orElseThrow(CourseNotFoundException::new);
 
         if (isTheOwner(courseId, requesterId)) {
@@ -142,7 +142,7 @@ public class VideoService {
      * @throws UnauthorizedException    If the requester is not authorized to perform the operation.
      */
     @CacheEvict(value = {"video", "course"}, allEntries = true)
-    public VideoDTO update(UUID courseId, UpdateVideoDTO updateVideoDTO, MultipartFile file, UUID requesterId) throws SectionNotFoundException, VideoNotFoundException, IOException, UnauthorizedException {
+    public VideoDTO update(UUID courseId, UpdateVideoDTO updateVideoDTO, MultipartFile file, UUID requesterId) throws SectionNotFoundException, VideoNotFoundException, IOException, UnauthorizedException, ProfessorNotFoundException {
         Section section = this.sectionRepository.findById(UUID.fromString(updateVideoDTO.getSectionId()))
                 .orElseThrow(SectionNotFoundException::new);
         Video video = this.videoRepository.findById(courseId)
@@ -164,11 +164,8 @@ public class VideoService {
     public VideoWatched markAsWatched(UUID videoId, UUID userId) throws VideoNotFoundException, UserNotFoundException {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(VideoNotFoundException::new);
-        Student student = studentRepository.findByUserId(userId);
-
-        if (student == null) {
-            throw new StudentNotFoundException();
-        }
+        Student student = studentRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
 
         VideoWatched videoWatched = new VideoWatched();
         videoWatched.setStudentId(student.getId());
@@ -206,9 +203,9 @@ public class VideoService {
      * @param requesterId The UUID of the user to verify as the owner.
      * @return true if the requesterId matches the owner of the course, false otherwise.
      */
-    private boolean isTheOwner(UUID courseId, UUID requesterId) {
-        Professor professor = professorRepository.findByUserId(requesterId);
-        if (professor == null) return false;
+    private boolean isTheOwner(UUID courseId, UUID requesterId) throws ProfessorNotFoundException {
+        Professor professor = professorRepository.findByUserId(requesterId)
+                .orElseThrow(ProfessorNotFoundException::new);
         return courseRepository.isTheOwner(courseId, professor.getId());
     }
 

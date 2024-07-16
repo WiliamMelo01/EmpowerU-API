@@ -47,7 +47,8 @@ public class CourseService {
     @CacheEvict(value = "course", allEntries = true)
     @Transactional
     public CourseDTO create(CreateCourseDTO createCourseDTO, UUID userId) throws UserNotFoundException {
-        Professor professor = this.professorRepository.findByUserId(userId);
+        Professor professor = this.professorRepository.findByUserId(userId)
+                .orElseThrow(ProfessorNotFoundException::new);
 
         Course course = CourseMapper.INSTANCE.toCourse(createCourseDTO);
         course.setProfessor(professor);
@@ -109,11 +110,8 @@ public class CourseService {
      */
     @Cacheable(value = "course", key = "#id.toString()+#userId.toString()")
     public Object findByIdAuthenticated(UUID id, UUID userId) throws CourseNotFoundException, UserNotFoundException {
-        Student student = this.studentRepository.findByUserId(userId);
-
-        if (student == null) {
-            throw new UserNotFoundException();
-        }
+        Student student = this.studentRepository.findByUserId(userId)
+                .orElseThrow(StudentNotFoundException::new);
 
         Course course = this.courseRepository.findById(id)
                 .orElseThrow(CourseNotFoundException::new);
@@ -178,10 +176,11 @@ public class CourseService {
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      */
     @CacheEvict(value = "course", allEntries = true)
-    public CourseDTO update(UUID courseId, UpdateCourseDTO updateCourseDTO, UUID requesterId) throws CourseNotFoundException, UnauthorizedException {
+    public CourseDTO update(UUID courseId, UpdateCourseDTO updateCourseDTO, UUID requesterId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
-        Professor professor = professorRepository.findByUserId(requesterId);
+        Professor professor = professorRepository.findByUserId(requesterId)
+                .orElseThrow(ProfessorNotFoundException::new);
 
         if (professor != null && isTheOwner(courseId, professor.getId())) {
             return updateProcess(course, updateCourseDTO);
@@ -220,10 +219,11 @@ public class CourseService {
      */
     @CacheEvict(value = "course", allEntries = true)
     @Transactional
-    public String delete(UUID courseId, UUID requesterId) throws CourseNotFoundException, UnauthorizedException {
+    public String delete(UUID courseId, UUID requesterId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
-        Professor professor = professorRepository.findByUserId(requesterId);
+        Professor professor = professorRepository.findByUserId(requesterId)
+                .orElseThrow(ProfessorNotFoundException::new);
 
         if (professor != null && isTheOwner(courseId, professor.getId())) {
             return deleteProcess(course);
@@ -262,11 +262,8 @@ public class CourseService {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
 
-        Student student = this.studentRepository.findByUserId(userId);
-
-        if (student == null) {
-            throw new UserNotFoundException();
-        }
+        Student student = this.studentRepository.findByUserId(userId)
+                .orElseThrow(StudentNotFoundException::new);
 
         if (course.getStudents().contains(student)) {
             throw new UserAlreadyEnrolledException();
@@ -293,11 +290,8 @@ public class CourseService {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
 
-        Student student = this.studentRepository.findByUserId(userId);
-
-        if (student == null) {
-            throw new UserNotFoundException();
-        }
+        Student student = this.studentRepository.findByUserId(userId)
+                .orElseThrow(StudentNotFoundException::new);
 
         boolean removed = course.getStudents().remove(student);
 

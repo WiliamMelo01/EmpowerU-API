@@ -10,6 +10,7 @@ import org.wiliammelo.empoweru.dtos.section.CreateSectionDTO;
 import org.wiliammelo.empoweru.dtos.section.SectionDTO;
 import org.wiliammelo.empoweru.dtos.section.UpdateSectionDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
+import org.wiliammelo.empoweru.exceptions.ProfessorNotFoundException;
 import org.wiliammelo.empoweru.exceptions.SectionNotFoundException;
 import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
 import org.wiliammelo.empoweru.models.User;
@@ -26,7 +27,7 @@ public class SectionController {
     private final SectionService sectionService;
 
     @PostMapping("/")
-    public ResponseEntity<SectionDTO> create(@RequestBody @Valid CreateSectionDTO createSectionDTO) throws UnauthorizedException, CourseNotFoundException {
+    public ResponseEntity<SectionDTO> create(@RequestBody @Valid CreateSectionDTO createSectionDTO) throws UnauthorizedException, CourseNotFoundException, ProfessorNotFoundException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(sectionService.create(createSectionDTO, user.getId()), HttpStatus.CREATED);
     }
@@ -37,13 +38,13 @@ public class SectionController {
     }
 
     @DeleteMapping("/{sectionId}")
-    public ResponseEntity<String> delete(@PathVariable UUID sectionId) throws UnauthorizedException, SectionNotFoundException {
+    public ResponseEntity<String> delete(@PathVariable UUID sectionId) throws UnauthorizedException, SectionNotFoundException, ProfessorNotFoundException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(sectionService.delete(sectionId, user.getId()), HttpStatus.OK);
     }
 
     @PutMapping("/{sectionId}")
-    public ResponseEntity<SectionDTO> update(@PathVariable UUID sectionId, @RequestBody @Valid UpdateSectionDTO updateSectionDTO) throws UnauthorizedException, SectionNotFoundException {
+    public ResponseEntity<SectionDTO> update(@PathVariable UUID sectionId, @RequestBody @Valid UpdateSectionDTO updateSectionDTO) throws UnauthorizedException, SectionNotFoundException, ProfessorNotFoundException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(sectionService.update(sectionId, updateSectionDTO, user.getId()), HttpStatus.OK);
     }

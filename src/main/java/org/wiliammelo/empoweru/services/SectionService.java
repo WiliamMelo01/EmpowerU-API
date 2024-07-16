@@ -6,6 +6,7 @@ import org.wiliammelo.empoweru.dtos.section.CreateSectionDTO;
 import org.wiliammelo.empoweru.dtos.section.SectionDTO;
 import org.wiliammelo.empoweru.dtos.section.UpdateSectionDTO;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
+import org.wiliammelo.empoweru.exceptions.ProfessorNotFoundException;
 import org.wiliammelo.empoweru.exceptions.SectionNotFoundException;
 import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
 import org.wiliammelo.empoweru.mappers.SectionMapper;
@@ -43,7 +44,7 @@ public class SectionService {
      * @throws UnauthorizedException   If the requester is not authorized to create the section.
      * @throws CourseNotFoundException If the associated course is not found.
      */
-    public SectionDTO create(CreateSectionDTO createSectionDTO, UUID requesterId) throws UnauthorizedException, CourseNotFoundException {
+    public SectionDTO create(CreateSectionDTO createSectionDTO, UUID requesterId) throws UnauthorizedException, CourseNotFoundException, ProfessorNotFoundException {
         Course course = courseRepository.findById(UUID.fromString(createSectionDTO.getCourseId()))
                 .orElseThrow(CourseNotFoundException::new);
 
@@ -91,7 +92,7 @@ public class SectionService {
      * @throws SectionNotFoundException If the section is not found.
      * @throws UnauthorizedException    If the requester is not authorized to delete the section.
      */
-    public String delete(UUID id, UUID requesterId) throws SectionNotFoundException, UnauthorizedException {
+    public String delete(UUID id, UUID requesterId) throws SectionNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         Section section = findById(id);
 
         if (isTheOwner(requesterId, section.getCourse().getId())) {
@@ -129,7 +130,7 @@ public class SectionService {
      * @throws SectionNotFoundException If the section with the specified ID does not exist.
      * @throws UnauthorizedException    If the requester is not the owner of the course to which the section belongs.
      */
-    public SectionDTO update(UUID id, UpdateSectionDTO updateSectionDTO, UUID requesterId) throws SectionNotFoundException, UnauthorizedException {
+    public SectionDTO update(UUID id, UpdateSectionDTO updateSectionDTO, UUID requesterId) throws SectionNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         Section section = findById(id);
 
         if (!isTheOwner(requesterId, section.getCourse().getId())) {
@@ -149,8 +150,9 @@ public class SectionService {
      * @param courseId    The UUID of the course to check ownership for.
      * @return true if the requester is the owner of the course, false otherwise.
      */
-    private boolean isTheOwner(UUID requesterId, UUID courseId) {
-        Professor professor = professorRepository.findByUserId(requesterId);
+    private boolean isTheOwner(UUID requesterId, UUID courseId) throws ProfessorNotFoundException {
+        Professor professor = professorRepository.findByUserId(requesterId)
+                .orElseThrow(ProfessorNotFoundException::new);
         return courseRepository.isTheOwner(courseId, professor.getId());
     }
 

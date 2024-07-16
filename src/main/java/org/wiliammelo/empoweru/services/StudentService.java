@@ -85,7 +85,8 @@ public class StudentService {
     @CacheEvict(value = "student", allEntries = true)
     @Transactional
     public String delete(UUID userId) throws UserNotFoundException {
-        Student student = this.studentRepository.findByUserId(userId);
+        Student student = this.studentRepository.findByUserId(userId)
+                .orElseThrow(StudentNotFoundException::new);
 
         this.userService.deleteById(userId);
         this.studentRepository.delete(student);
@@ -103,7 +104,8 @@ public class StudentService {
     @CacheEvict(value = "student", allEntries = true)
     @Transactional
     public StudentDTO update(UUID userId, UpdateStudentDTO updateStudentDTO) throws StudentNotFoundException {
-        Student student = this.studentRepository.findByUserId(userId);
+        Student student = this.studentRepository.findByUserId(userId)
+                .orElseThrow(StudentNotFoundException::new);
 
         User user = student.getUser();
         user.setName(updateStudentDTO.getName());

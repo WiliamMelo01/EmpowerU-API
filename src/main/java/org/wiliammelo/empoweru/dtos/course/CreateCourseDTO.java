@@ -26,7 +26,7 @@ public class CreateCourseDTO {
 
     @NotNull(message = "At least one tag is required.")
     @Size(min = 1, message = "At least one tag is required.")
-    @Size(max = 10, message = "At least most tag is required.")
+    @Size(max = 10, message = "At most ten tags are required.")
     private List<String> tags;
 
 }

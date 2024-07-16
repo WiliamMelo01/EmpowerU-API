@@ -51,7 +51,7 @@ public class VideoController {
     }
 
     @DeleteMapping("/{videoId}")
-    public ResponseEntity<CustomResponse> delete(@PathVariable("videoId") UUID courseId) throws CourseNotFoundException, UnauthorizedException {
+    public ResponseEntity<CustomResponse> delete(@PathVariable("videoId") UUID courseId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         String message = this.videoService.delete(courseId, user.getId());
@@ -62,7 +62,7 @@ public class VideoController {
     @PutMapping("/{videoId}")
     public ResponseEntity<VideoDTO> update(@RequestPart("video") @Valid UpdateVideoDTO updateVideoDTO,
                                            @RequestPart("file") MultipartFile file,
-                                           @PathVariable("videoId") UUID courseId) throws SectionNotFoundException, VideoNotFoundException, IOException, UnauthorizedException {
+                                           @PathVariable("videoId") UUID courseId) throws SectionNotFoundException, VideoNotFoundException, IOException, UnauthorizedException, ProfessorNotFoundException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         VideoDTO video = this.videoService.update(courseId, updateVideoDTO, file, user.getId());
@@ -75,5 +75,5 @@ public class VideoController {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(this.videoService.markAsWatched(videoId, user.getId()), HttpStatus.OK);
     }
-    
+
 }
