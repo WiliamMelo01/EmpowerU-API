@@ -1,5 +1,6 @@
 package org.wiliammelo.empoweru.services;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.evaluation_activity_result.CreateEvaluationActivityResultDTO;
@@ -39,6 +40,7 @@ public class EvaluationActivityResultService {
      * @throws StudentNotFoundException            If the student associated with the DTO does not exist.
      * @throws EvaluationActivityNotFoundException If the evaluation activity associated with the DTO does not exist.
      */
+    @Transactional
     public EvaluationActivityResult create(CreateEvaluationActivityResultDTO createEvaluationActivityResultDTO) throws CourseNotFoundException, StudentNotFoundException, EvaluationActivityNotFoundException {
         UUID studentId = UUID.fromString(createEvaluationActivityResultDTO.getStudentId());
         UUID courseId = UUID.fromString(createEvaluationActivityResultDTO.getCourseId());
