@@ -30,4 +30,9 @@ public class Section {
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
+
+    @OneToOne
+    @JoinColumn(name = "evaluation_activity_id")
+    private EvaluationActivity evaluationActivity;
+
 }
