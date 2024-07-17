@@ -132,6 +132,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.CONFLICT);
     }
 
+    /**
+     * Handles exceptions of type EvaluationActivityNotFoundException.
+     * Maps the exception to an HTTP NOT_FOUND response status.
+     *
+     * @param ex The caught EvaluationActivityNotFoundException.
+     * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
+     */
+    @ExceptionHandler(EvaluationActivityNotFoundException.class)
+    public ResponseEntity<CustomResponse> handleEvaluationActivityNotFoundException(EvaluationActivityNotFoundException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handles exceptions of type CanNotIssueCertificateException.
+     * Maps the exception to an HTTP BAD_REQUEST response status.
+     *
+     * @param ex The caught CanNotIssueCertificateException.
+     * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
+     */
+    @ExceptionHandler(CanNotIssueCertificateException.class)
+    public ResponseEntity<CustomResponse> handleCanNotIssueCertificateException(CanNotIssueCertificateException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.BAD_REQUEST);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 

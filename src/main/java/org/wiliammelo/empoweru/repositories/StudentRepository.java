@@ -15,4 +15,5 @@ public interface StudentRepository extends CrudRepository<Student, UUID> {
     @Query("SELECT s FROM Student s WHERE s.user.id = :userId")
     Optional<Student> findByUserId(@Param("userId") UUID userId);
 
+    boolean existsById(UUID id);
 }

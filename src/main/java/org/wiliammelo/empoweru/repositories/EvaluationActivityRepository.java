@@ -8,4 +8,7 @@ import java.util.UUID;
 
 @Repository
 public interface EvaluationActivityRepository extends CrudRepository<EvaluationActivity, UUID> {
+
+    boolean existsById(UUID id);
+
 }

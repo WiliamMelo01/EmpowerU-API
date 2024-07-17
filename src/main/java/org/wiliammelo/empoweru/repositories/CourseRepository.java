@@ -22,4 +22,7 @@ public interface CourseRepository extends CrudRepository<Course, UUID> {
 
     @Query("SELECT (CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END) FROM Course c WHERE c.id = :courseId AND c.professor.id = :ownerId")
     Boolean isTheOwner(@Param("courseId") UUID courseId, @Param("ownerId") UUID ownerId);
+
+    boolean existsById(UUID id);
+
 }

@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.wiliammelo.empoweru.dtos.evaluation_activity.CreateEvaluationActivityDTO;
-import org.wiliammelo.empoweru.exceptions.EvaluationAlreadyExistsException;
-import org.wiliammelo.empoweru.exceptions.ProfessorNotFoundException;
-import org.wiliammelo.empoweru.exceptions.SectionNotFoundException;
-import org.wiliammelo.empoweru.exceptions.UnauthorizedException;
+import org.wiliammelo.empoweru.dtos.evaluation_activity_result.CreateEvaluationActivityResultDTO;
+import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.models.EvaluationActivity;
+import org.wiliammelo.empoweru.models.EvaluationActivityResult;
 import org.wiliammelo.empoweru.models.User;
+import org.wiliammelo.empoweru.services.EvaluationActivityResultService;
 import org.wiliammelo.empoweru.services.EvaluationActivityService;
 
 @RestController
@@ -24,11 +24,17 @@ import org.wiliammelo.empoweru.services.EvaluationActivityService;
 public class EvaluationActivityController {
 
     private final EvaluationActivityService evaluationActivityService;
+    private final EvaluationActivityResultService evaluationActivityResultService;
 
     @PostMapping("/")
     public ResponseEntity<EvaluationActivity> create(@RequestBody @Validated CreateEvaluationActivityDTO createEvaluationActivityDTO) throws ProfessorNotFoundException, SectionNotFoundException, UnauthorizedException, EvaluationAlreadyExistsException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(this.evaluationActivityService.create(createEvaluationActivityDTO, user.getId()), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/result/")
+    public ResponseEntity<EvaluationActivityResult> result(@RequestBody @Validated CreateEvaluationActivityResultDTO createEvaluationActivityResultDTO) throws EvaluationActivityNotFoundException, CourseNotFoundException, StudentNotFoundException {
+        return new ResponseEntity<>(this.evaluationActivityResultService.create(createEvaluationActivityResultDTO), HttpStatus.CREATED);
     }
 
 }
