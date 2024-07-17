@@ -16,6 +16,9 @@ import org.wiliammelo.empoweru.repositories.*;
 
 import java.util.UUID;
 
+/**
+ * Service class for handling evaluation activity operations.
+ */
 @Service
 @AllArgsConstructor
 public class EvaluationActivityService {
@@ -27,6 +30,17 @@ public class EvaluationActivityService {
     private QuestionRepository questionRepository;
     private QuestionOptionRepository questionOptionRepository;
 
+    /**
+     * Creates a new evaluation activity for a specific section.
+     *
+     * @param createEvaluationActivityDTO The data transfer object containing the details of the evaluation activity to be created.
+     * @param requesterId                 The UUID of the user requesting the creation of the evaluation activity.
+     * @return The saved {@link EvaluationActivity} object.
+     * @throws ProfessorNotFoundException       If the professor (requester) is not found.
+     * @throws SectionNotFoundException         If the section for which the evaluation activity is to be created is not found.
+     * @throws UnauthorizedException            If the requester is not the owner of the course to which the section belongs.
+     * @throws EvaluationAlreadyExistsException If the section already has an evaluation activity associated with it.
+     */
     @Transactional
     public EvaluationActivity create(CreateEvaluationActivityDTO createEvaluationActivityDTO, UUID requesterId) throws ProfessorNotFoundException, SectionNotFoundException, UnauthorizedException, EvaluationAlreadyExistsException {
         Section section = sectionRepository.findById(UUID.fromString(createEvaluationActivityDTO.getSectionId()))
