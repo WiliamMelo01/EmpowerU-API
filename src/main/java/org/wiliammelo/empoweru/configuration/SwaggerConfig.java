@@ -40,8 +40,8 @@ public class SwaggerConfig {
                                 .url("https://github.com/wiliammelo01")
                         )
                 ).servers(List.of(
-                        new Server().url("http://localhost:8080").description("Local server for testing.")
-                        , new Server().url(localServerHost).description("Production server for EmpowerU application."))
+                        new Server().url(localServerHost).description("Production server for EmpowerU application."),
+                        new Server().url("http://localhost:8080").description("Local server for testing."))
                 );
     }
 
