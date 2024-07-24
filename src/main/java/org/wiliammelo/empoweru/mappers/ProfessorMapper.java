@@ -21,25 +21,6 @@ public interface ProfessorMapper {
     ProfessorMapper INSTANCE = Mappers.getMapper(ProfessorMapper.class);
 
     /**
-     * Converts a CreateProfessorDTO to a Professor entity.
-     *
-     * @param professor The CreateProfessorDTO to convert.
-     * @return The converted Professor entity.
-     */
-    Professor toProfessor(CreateProfessorDTO professor);
-
-    /**
-     * Converts a ProfessorDTO to a Professor entity, mapping DTO fields to the nested User entity.
-     *
-     * @param professor The ProfessorDTO to convert.
-     * @return The converted Professor entity with nested User entity populated.
-     */
-    @Mapping(source = "name", target = "user.name")
-    @Mapping(source = "email", target = "user.email")
-    @Mapping(source = "gender", target = "user.gender")
-    Professor toProfessor(ProfessorDTO professor);
-
-    /**
      * Converts a Professor entity to a ProfessorDTO, mapping fields from the nested User entity.
      *
      * @param professor The Professor entity to convert.

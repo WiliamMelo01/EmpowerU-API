@@ -4,6 +4,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -154,6 +155,31 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(CanNotIssueCertificateException.class)
     public ResponseEntity<CustomResponse> handleCanNotIssueCertificateException(CanNotIssueCertificateException ex) {
         return new ResponseEntity<>(new CustomResponse(ex.getMessage(), ex.getError()), HttpStatus.BAD_REQUEST);
+    }
+
+
+    /**
+     * Handles exceptions of type BadCredentialsException.
+     * Maps the exception to an HTTP BAD_REQUEST response status.
+     *
+     * @param ex The caught BadCredentialsException.
+     * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<CustomResponse> handleBadCredentialsException(BadCredentialsException ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles exceptions of type Exception.
+     * Maps the exception to an HTTP v response status.
+     *
+     * @param ex The caught Exception.
+     * @return A ResponseEntity containing a CustomResponse with the exception's message and error details, and the HTTP status code.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<CustomResponse> handleGenericException(Exception ex) {
+        return new ResponseEntity<>(new CustomResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
