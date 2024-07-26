@@ -27,7 +27,9 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 ## Technologies
 
 - **Spring Boot** - Framework for building the REST API.
+- **Spring Security** - For securing the application.
 - **PostgreSQL** - Database for storing application data.
+- **Azure Storage Blob** - For handling Azure Blob 
 - **JavaMailSender** - For sending emails.
 - **Redis** - For caching
 - **RabbitMQ** - For handling asynchronous messaging.
