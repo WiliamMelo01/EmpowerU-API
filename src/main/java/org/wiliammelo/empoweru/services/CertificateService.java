@@ -1,9 +1,9 @@
 package org.wiliammelo.empoweru.services;
 
-import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.wiliammelo.empoweru.clients.CertificateMicroserviceHTTPClient;
 import org.wiliammelo.empoweru.dtos.certificate.IssueCertificateRequestDTO;
 import org.wiliammelo.empoweru.exceptions.CanNotIssueCertificateException;
 import org.wiliammelo.empoweru.exceptions.CourseNotFoundException;
@@ -17,16 +17,20 @@ import org.wiliammelo.empoweru.repositories.StudentRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class CertificateService {
     private final EvaluationActivityResultRepository evaluationActivityResultRepository;
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
-    private final RabbitTemplate rabbitTemplate;
+    private final CertificateMicroserviceHTTPClient certificateMicroserviceHTTPClient;
 
     private static final float MIN_GRADE = 7.0f;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     public String issue(UUID courseId, UUID requesterId) throws CourseNotFoundException, CanNotIssueCertificateException, UserNotFoundException {
         Student student = studentRepository.findByUserId(requesterId)
@@ -41,16 +45,21 @@ public class CertificateService {
                     .courseTitle(course.getTitle())
                     .email(student.getUser().getEmail())
                     .build();
-            publishCertificateRequest(issueCertificateRequestDTO);
+            issueAsynchronously(issueCertificateRequestDTO);
             return "Issue in progress. As soon as it is ready, you will receive an email.";
         }
 
         throw new CanNotIssueCertificateException();
     }
 
-    private void publishCertificateRequest(IssueCertificateRequestDTO issueCertificateRequestDTO) {
-        Gson gson = new Gson();
-        rabbitTemplate.convertAndSend("certificateExchange", "certificateRoutingKey", gson.toJson(issueCertificateRequestDTO));
+    private void issueAsynchronously(IssueCertificateRequestDTO issueCertificateRequestDTO) {
+        executorService.submit(() -> {
+            try {
+                certificateMicroserviceHTTPClient.generateCertificate(issueCertificateRequestDTO);
+            } catch (Exception e) {
+                log.warn("Error while issuing certificate {}", e.getMessage());
+            }
+        });
     }
 
     private boolean canIssueCertificate(UUID userId, Course course) {
