@@ -94,6 +94,8 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 
     # SERVER CONFIGS
     local.server.host=https://localhost:8080
+    # CERTIFICATE MICROSERVICE
+    certificate-microservice.url=http://localhost:7071
     ```
 
 3. Ensure that the application is using the `dev` profile by setting the active profile in `application.properties`:
