@@ -8,6 +8,7 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 - [Overview](#overview)
 - [Features](#features)
 - [Technologies](#technologies)
+- [Database Schema](#database-schema)
 - [Setup](#setup)
 - [Usage](#usage)
 - [License](#license)
@@ -36,6 +37,95 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 - **AWS Lambda** - For executing serverless functions, such as sending welcome emails and generating certificates.
 - **Swagger** - API documentation.
 
+## Database Schema
+
+### Entity-Relationship Diagram
+
+```mermaid
+erDiagram
+    COURSE {
+        UUID id PK
+        string title
+        string description
+    }
+
+    PROFESSOR {
+        UUID id PK
+        string bio
+        string imageUrl
+    }
+
+    STUDENT {
+        UUID id PK
+    }
+
+    USER {
+        UUID id PK
+        string name
+        string email
+        string password
+        string gender
+        string role
+    }
+
+    SECTION {
+        UUID id PK
+        string title
+        string description
+    }
+
+    VIDEO {
+        UUID id PK
+        string url
+        string title
+        double durationInSeconds
+        int displayOrder
+    }
+
+    EVALUATION_ACTIVITY {
+        UUID id PK
+    }
+
+    QUESTION {
+        UUID id PK
+        string text
+    }
+
+    QUESTION_OPTION {
+        UUID id PK
+        string text
+        boolean correct
+    }
+
+    EVALUATION_ACTIVITY_RESULT {
+        UUID id PK
+        UUID evaluationId
+        UUID courseId
+        UUID studentId
+        float grade
+    }
+
+    VIDEO_WATCHED {
+        UUID id PK
+        UUID videoId
+        UUID studentId
+    }
+
+    COURSE ||--o| PROFESSOR : "taught by"
+    COURSE ||--o| SECTION : "contains"
+    COURSE ||--o| STUDENT : "enrolled in"
+    SECTION ||--o| VIDEO : "includes"
+    SECTION ||--o| EVALUATION_ACTIVITY : "has"
+    EVALUATION_ACTIVITY ||--o| QUESTION : "contains"
+    QUESTION ||--o| QUESTION_OPTION : "has"
+    EVALUATION_ACTIVITY_RESULT ||--o| COURSE : "for"
+    EVALUATION_ACTIVITY_RESULT ||--o| STUDENT : "for"
+    VIDEO_WATCHED ||--o| VIDEO : "watched"
+    VIDEO_WATCHED ||--o| STUDENT : "watched by"
+    USER ||--o| PROFESSOR : "represents"
+    USER ||--o| STUDENT : "represents"
+```
+
 ## Setup
 
 ### Prerequisites
@@ -44,7 +134,7 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 - Maven 3.6.0 or higher
 - PostgreSQL server
 - Redis server
-- AWS account with two SQS intances
+- AWS account with two SQS instances
 
 ### Installation
 
@@ -133,13 +223,3 @@ For handling password recovery requests, the EmpowerU Password Recovery Microser
 ### Certificate Generation
 
 The issuance of certificates for completed courses is handled by the EmpowerU Certificate Generation Microservice. This microservice generates certificates and sends them to students via email. For more details, visit the [EmpowerU Certificate Generation Microservice](https://github.com/WiliamMelo01/EmpoweruCertificateMicroserviceLambda).
-
-## TODO
-
-- [ ] **Rate Limiting**: Add rate limiting to prevent abuse of the password update endpoint.
-- [ ] **Logging and Monitoring**: Implement logging and monitoring to track the usage and performance of the microservice.
-- [ ] **Improve General Performance**: Optimize the overall performance of the API to handle higher loads and reduce response times.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
