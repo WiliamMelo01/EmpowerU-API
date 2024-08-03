@@ -11,6 +11,7 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 - [Setup](#setup)
 - [Usage](#usage)
 - [License](#license)
+- [TODO](#todo)
 
 ## Features
 
@@ -21,18 +22,17 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 - Manage courses: create, update, delete, and retrieve course details, as well as enroll and disenroll students.
 - Evaluate activities: create and save evaluation results.
 - Issue certificates for completed courses.
-- Integrates with RabbitMQ to handle asynchronous tasks, such as sending messages when a user is created.
-
+- Integrates with AWS SQS to handle asynchronous tasks, such as sending messages when a user is created.
 
 ## Technologies
 
 - **Spring Boot** - Framework for building the REST API.
 - **Spring Security** - For securing the application.
 - **PostgreSQL** - Database for storing application data.
-- **Azure Storage Blob** - For handling Azure Blob 
+- **Azure Storage Blob** - For handling file uploads and storage.
 - **JavaMailSender** - For sending emails.
-- **Redis** - For caching
-- **RabbitMQ** - For handling asynchronous messaging.
+- **Redis** - For caching.
+- **AWS SQS** - For handling asynchronous messaging.
 - **Swagger** - API documentation.
 
 ## Setup
@@ -42,6 +42,8 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 - Java 17 or higher
 - Maven 3.6.0 or higher
 - PostgreSQL server
+- Redis server
+- AWS account with two SQS intances
 
 ### Installation
 
@@ -52,7 +54,7 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
     cd EmpowerU-API
     ```
 
-2. Update the `application-dev.properties` file with your database and email configurations:
+2. Update the `application-dev.properties` file with your database, email, and other configurations:
 
    ```properties
     # DATABASE CONFIGS
@@ -84,18 +86,15 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
     # JWT CONFIGS
     jwt.secret=jwt-dev-secret
 
-    # RABBITMQ CONFIGS
-    spring.rabbitmq.host=localhost
-    spring.rabbitmq.port=5672
-    spring.rabbitmq.username=default
-    spring.rabbitmq.password=1234
-    rabbitmq.exchange=emailExchange
-    rabbitmq.routingkey=emailRoutingKey
-
     # SERVER CONFIGS
-    local.server.host=https://localhost:8080
-    # CERTIFICATE MICROSERVICE
-    certificate-microservice.url=http://localhost:7071
+    server.port=8080
+
+    # AWS CONFIGS
+    aws.accessKeyId=your_access_key
+    aws.secretKey=your_secret_key
+    aws.region=us-east-1
+    aws.sqs.certificate-queue-name=yoursqsname
+    aws.sqs.greetings-queue-name=yoursqsname
     ```
 
 3. Ensure that the application is using the `dev` profile by setting the active profile in `application.properties`:
@@ -116,31 +115,26 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
     ```bash
     mvn spring-boot:run
     ```
-    
+
 ## Usage
 
 - The API provides endpoints for managing videos, students, sections, professors, courses, evaluations, and certificates.
 - For detailed information on available endpoints and their usage, refer to the Swagger documentation available at `/swagger-ui.html` once the application is running.
 
-### User Creation and RabbitMQ Integration
+### User Creation and AWS SQS Integration
 
-When a new user is created via the `/auth/public/register/student` or `/auth/public/register/professor` endpoints, a message is sent to RabbitMQ. This message can be consumed by another microservice for further processing, such as sending a welcome email. For more information on the microservice handling these messages, visit the [EmpowerU Greetings Microservice](https://github.com/WiliamMelo01/EmpowerUGreettingsMicroService).
+When a new user is created via the `/auth/public/register/student` or `/auth/public/register/professor` endpoints, a message is sent to an AWS SQS queue. This message can be consumed by another microservice for further processing, such as sending a welcome email. For more information on the microservice handling these messages, visit the [EmpowerU Greetings Microservice](https://github.com/WiliamMelo01/EmpoweruGreetingsMicroServiceLambda).
 
 ### Password Recovery
 
-For handling password recovery requests, the EmpowerU Password Recovery Microservice is responsible for sending recovery codes and updating passwords. For more information, visit the [EmpowerU Password Recovery Microservice](https://github.com/WiliamMelo01/EmpowerUPasswordRecoveryMicroService).
+For handling password recovery requests, the EmpowerU Password Recovery Microservice is responsible for sending recovery codes and updating passwords. For more information, visit the [EmpowerU Password Recovery Microservice](https://github.com/WiliamMelo01/EmpowerUPasswordRecoveryMicroservice).
 
 ### Certificate Generation
 
-The issuance of certificates for completed courses is handled by a separate microservice. For more details on this service, visit the [EmpowerU Certificate Generation Microservice](https://github.com/WiliamMelo01/EmpowerUCertificateMicroService).
+The issuance of certificates for completed courses is handled by the EmpowerU Certificate Generation Microservice. This microservice generates and sends certificates to students on email. For more details, visit the [EmpowerU Certificate Generation Microservice](https://github.com/WiliamMelo01/EmpoweruCertificateMicroserviceLambda).
 
 ## TODO
 
-### FIX
-
-- [ ] **Certificate Issuance Verification**: Update the API to use HTTP requests instead of RabbitMQ messages for communicating with the certificate generation microservice. Ensure the API verifies if the user has completed all requirements before making the HTTP request.
-
-### TODO
 - [ ] **Rate Limiting**: Add rate limiting to prevent abuse of the password update endpoint.
 - [ ] **Logging and Monitoring**: Implement logging and monitoring to track the usage and performance of the microservice.
 - [ ] **Improve General Performance**: Optimize the overall performance of the API to handle higher loads and reduce response times.
