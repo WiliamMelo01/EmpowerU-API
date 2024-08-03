@@ -33,6 +33,7 @@ The EmpowerU API provides endpoints for managing videos, students, sections, pro
 - **JavaMailSender** - For sending emails.
 - **Redis** - For caching.
 - **AWS SQS** - For handling asynchronous messaging.
+- **AWS Lambda** - For executing serverless functions, such as sending welcome emails and generating certificates.
 - **Swagger** - API documentation.
 
 ## Setup
