@@ -1,8 +1,8 @@
 package org.wiliammelo.empoweru.services;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.wiliammelo.empoweru.email.EmailService;
+import org.wiliammelo.empoweru.clients.MessagePublisher;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.models.User;
@@ -16,11 +16,15 @@ import java.util.UUID;
  * Utilizes {@link UserRepository} for persistence operations.
  */
 @Service
-@AllArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-    private final EmailService emailService;
+    private final MessagePublisher greetingsMessagePublisher;
+
+    public UserService(UserRepository userRepository, @Qualifier("greetingsSQSPublisher") MessagePublisher greetingsMessagePublisher) {
+        this.userRepository = userRepository;
+        this.greetingsMessagePublisher = greetingsMessagePublisher;
+    }
 
     /**
      * Creates a new user with the provided {@link User} object.
@@ -34,8 +38,7 @@ public class UserService {
             throw new UserAlreadyExistsException("This email is already registered.");
         }
 
-        // Send a greetings email to the user
-        emailService.send(user.getEmail());
+        greetingsMessagePublisher.publish(user.getEmail());
         return this.userRepository.save(user);
     }
 

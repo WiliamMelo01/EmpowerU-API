@@ -1,7 +1,7 @@
 package org.wiliammelo.empoweru.services;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.clients.MessagePublisher;
 import org.wiliammelo.empoweru.dtos.certificate.IssueCertificateRequestDTO;
@@ -19,13 +19,19 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class CertificateService {
     private final EvaluationActivityResultRepository evaluationActivityResultRepository;
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
     private final MessagePublisher certificateIssueMessagePublisher;
+
+    public CertificateService(EvaluationActivityResultRepository evaluationActivityResultRepository, CourseRepository courseRepository, StudentRepository studentRepository, @Qualifier("certificateIssueSQSPublisher") MessagePublisher certificateIssueMessagePublisher) {
+        this.evaluationActivityResultRepository = evaluationActivityResultRepository;
+        this.courseRepository = courseRepository;
+        this.studentRepository = studentRepository;
+        this.certificateIssueMessagePublisher = certificateIssueMessagePublisher;
+    }
 
     private static final float MIN_GRADE = 7.0f;
 
@@ -42,7 +48,7 @@ public class CertificateService {
                     .courseTitle(course.getTitle())
                     .email(student.getUser().getEmail())
                     .build();
-            certificateIssueMessagePublisher.publishJson(issueCertificateRequestDTO);
+            certificateIssueMessagePublisher.publish(issueCertificateRequestDTO);
             return "Issue in progress. As soon as it is ready, you will receive an email.";
         }
 
