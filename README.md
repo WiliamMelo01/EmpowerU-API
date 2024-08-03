@@ -131,7 +131,7 @@ For handling password recovery requests, the EmpowerU Password Recovery Microser
 
 ### Certificate Generation
 
-The issuance of certificates for completed courses is handled by the EmpowerU Certificate Generation Microservice. This microservice generates and sends certificates to students on email. For more details, visit the [EmpowerU Certificate Generation Microservice](https://github.com/WiliamMelo01/EmpoweruCertificateMicroserviceLambda).
+The issuance of certificates for completed courses is handled by the EmpowerU Certificate Generation Microservice. This microservice generates certificates and sends them to students via email. For more details, visit the [EmpowerU Certificate Generation Microservice](https://github.com/WiliamMelo01/EmpoweruCertificateMicroserviceLambda).
 
 ## TODO
 
