@@ -5,11 +5,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.configuration.security.JWTService;
 import org.wiliammelo.empoweru.dtos.LoginDTO;
+import org.wiliammelo.empoweru.dtos.TokenResponse;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
@@ -60,11 +61,27 @@ public class AuthService {
         return ProfessorMapper.INSTANCE.toProfessorDTO(this.professorRepository.save(professor));
     }
 
-    public String login(LoginDTO loginDTO) throws CustomException {
+    public TokenResponse login(LoginDTO loginDTO) throws CustomException {
         var usernamePassword = new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
-        return jwtService.generateToken((User) auth.getPrincipal(), (GrantedAuthority) auth.getAuthorities().toArray()[0]);
+        String accessToken = jwtService.generateAccessToken((User) auth.getPrincipal());
+        String refreshToken = jwtService.generateRefreshToken((User) auth.getPrincipal());
+
+        return new TokenResponse(accessToken,
+                refreshToken,
+                getRole(auth)
+        );
+
+    }
+
+    private String getRole(Authentication auth) {
+        return auth.getAuthorities()
+                .stream()
+                .findFirst()
+                .get()
+                .getAuthority()
+                .replace("ROLE_", "");
     }
 
 }

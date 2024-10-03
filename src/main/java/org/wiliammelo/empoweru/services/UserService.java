@@ -1,6 +1,7 @@
 package org.wiliammelo.empoweru.services;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.clients.MessagePublisher;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
@@ -17,6 +18,9 @@ import java.util.UUID;
  */
 @Service
 public class UserService {
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
 
     private final UserRepository userRepository;
     private final MessagePublisher greetingsMessagePublisher;
@@ -38,7 +42,9 @@ public class UserService {
             throw new UserAlreadyExistsException("This email is already registered.");
         }
 
-        greetingsMessagePublisher.publish(user.getEmail());
+        if (activeProfile.equals("prod")) {
+            greetingsMessagePublisher.publish(user.getEmail());
+        }
         return this.userRepository.save(user);
     }
 

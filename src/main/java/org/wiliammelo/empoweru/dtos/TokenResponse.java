@@ -8,7 +8,9 @@ import java.sql.Timestamp;
 @Getter
 public class TokenResponse {
 
-    private final String token;
+    private final String accessToken;
+
+    private final String refreshToken;
 
     private final int status;
 
@@ -16,8 +18,9 @@ public class TokenResponse {
 
     private final String role;
 
-    public TokenResponse(String token, String role) {
-        this.token = token;
+    public TokenResponse(String accessToken, String refreshToken, String role) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
         this.role = role;
         this.status = HttpStatus.OK.value();
         this.timestamp = new Timestamp(System.currentTimeMillis());

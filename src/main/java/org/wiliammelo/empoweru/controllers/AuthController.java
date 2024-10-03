@@ -4,10 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.configuration.security.JWTService;
 import org.wiliammelo.empoweru.dtos.LoginDTO;
 import org.wiliammelo.empoweru.dtos.TokenResponse;
@@ -17,6 +14,8 @@ import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.exceptions.CustomException;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
+import org.wiliammelo.empoweru.models.User;
+import org.wiliammelo.empoweru.repositories.UserRepository;
 import org.wiliammelo.empoweru.services.AuthService;
 
 @RestController
@@ -26,6 +25,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final JWTService jwtService;
+    private final UserRepository userRepository;
 
     @PostMapping("/public/register/student")
     public ResponseEntity<StudentDTO> registerStudent(@Valid @RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
@@ -39,8 +39,30 @@ public class AuthController {
 
     @PostMapping("/public/login")
     public ResponseEntity<TokenResponse> loginProfessor(@Valid @RequestBody LoginDTO loginDTO) throws CustomException {
-        String token = authService.login(loginDTO);
-        return new ResponseEntity<>(new TokenResponse(token, jwtService.getRole(token)), HttpStatus.OK);
+        TokenResponse tokenResponse = authService.login(loginDTO);
+        return new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+    }
+
+    @PostMapping("/public/refresh")
+    public ResponseEntity<TokenResponse> refresh(@RequestHeader("Authorization") String authorization) throws CustomException {
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new CustomException("Invalid token", HttpStatus.UNAUTHORIZED.value());
+        }
+
+        String refreshToken = authorization.substring(7);
+
+        String email = jwtService.validateRefreshToken(refreshToken);
+
+        if (email == null) {
+            throw new CustomException("Invalid token", HttpStatus.UNAUTHORIZED.value());
+        }
+
+        User user = (User) userRepository.findByEmail(email);
+
+        TokenResponse newTokenResponse = new TokenResponse(jwtService.generateAccessToken(user), refreshToken, user.getRole().getRole());
+
+        return ResponseEntity.ok(newTokenResponse);
     }
 
 
