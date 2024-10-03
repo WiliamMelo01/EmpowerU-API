@@ -1,0 +1,29 @@
+services:
+  db:
+    container_name: empoweru_db
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: empoweru
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    networks:
+      - empoweru_network
+  redis:
+    container_name: empoweru_redis
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - empoweru_network
+volumes:
+  postgres_data:
+  redis_data:
+networks:
+  empoweru_network:
+    driver: bridge
