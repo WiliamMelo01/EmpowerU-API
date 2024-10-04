@@ -7,7 +7,6 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.exceptions.CustomException;
 import org.wiliammelo.empoweru.models.User;
@@ -91,8 +90,4 @@ public class JWTService {
         return user.getAuthorities().stream().findFirst().get().getAuthority().replace("ROLE_", "");
     }
 
-    // TODO: REMOVE THIS FUNCTION AND USE @AuthenticationPrincipal INSTEAD
-    public static User getUserFromAuthContext() {
-        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    }
 }

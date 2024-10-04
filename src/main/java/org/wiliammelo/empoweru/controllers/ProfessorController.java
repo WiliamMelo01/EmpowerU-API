@@ -4,8 +4,8 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.wiliammelo.empoweru.configuration.security.JWTService;
 import org.wiliammelo.empoweru.dtos.professor.ProfessorDTO;
 import org.wiliammelo.empoweru.dtos.professor.UpdateProfessorDTO;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
@@ -33,8 +33,7 @@ public class ProfessorController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<String> delete() throws UserNotFoundException {
-        User user = JWTService.getUserFromAuthContext();
+    public ResponseEntity<String> delete(@AuthenticationPrincipal User user) throws UserNotFoundException {
         return new ResponseEntity<>(this.professorService.delete(user.getId()), HttpStatus.OK);
     }
 
@@ -44,8 +43,7 @@ public class ProfessorController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<ProfessorDTO> update(@RequestBody @Valid UpdateProfessorDTO updateStudentDTO) throws UserNotFoundException {
-        User user = JWTService.getUserFromAuthContext();
+    public ResponseEntity<ProfessorDTO> update(@RequestBody @Valid UpdateProfessorDTO updateStudentDTO, @AuthenticationPrincipal User user) throws UserNotFoundException {
         return new ResponseEntity<>(this.professorService.update(user.getId(), updateStudentDTO), HttpStatus.OK);
     }
 
