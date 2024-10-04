@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.dtos.student.UpdateStudentDTO;
@@ -39,14 +39,12 @@ public class StudentController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<String> delete() throws UserNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<String> delete(@AuthenticationPrincipal User user) throws UserNotFoundException {
         return new ResponseEntity<>(this.studentService.delete(user.getId()), HttpStatus.OK);
     }
 
     @PutMapping("/")
-    public ResponseEntity<StudentDTO> update(@RequestBody @Valid UpdateStudentDTO updateStudentDTO) throws UserNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<StudentDTO> update(@RequestBody @Valid UpdateStudentDTO updateStudentDTO, @AuthenticationPrincipal User user) throws UserNotFoundException {
         return new ResponseEntity<>(this.studentService.update(user.getId(), updateStudentDTO), HttpStatus.OK);
     }
 

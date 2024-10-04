@@ -3,7 +3,7 @@ package org.wiliammelo.empoweru.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,8 +27,7 @@ public class EvaluationActivityController {
     private final EvaluationActivityResultService evaluationActivityResultService;
 
     @PostMapping("/")
-    public ResponseEntity<EvaluationActivity> create(@RequestBody @Validated CreateEvaluationActivityDTO createEvaluationActivityDTO) throws ProfessorNotFoundException, SectionNotFoundException, UnauthorizedException, EvaluationAlreadyExistsException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<EvaluationActivity> create(@RequestBody @Validated CreateEvaluationActivityDTO createEvaluationActivityDTO, @AuthenticationPrincipal User user) throws ProfessorNotFoundException, SectionNotFoundException, UnauthorizedException, EvaluationAlreadyExistsException {
         return new ResponseEntity<>(this.evaluationActivityService.create(createEvaluationActivityDTO, user.getId()), HttpStatus.CREATED);
     }
 

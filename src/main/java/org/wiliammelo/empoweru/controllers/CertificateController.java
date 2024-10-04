@@ -3,7 +3,7 @@ package org.wiliammelo.empoweru.controllers;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +25,7 @@ public class CertificateController {
     private final CertificateService certificateService;
 
     @PostMapping("/issue/{courseId}")
-    public ResponseEntity<CustomResponse> issueCertificate(@PathVariable("courseId") UUID courseId) throws CanNotIssueCertificateException, CourseNotFoundException, UserNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<CustomResponse> issueCertificate(@PathVariable("courseId") UUID courseId, @AuthenticationPrincipal User user) throws CanNotIssueCertificateException, CourseNotFoundException, UserNotFoundException {
         return new ResponseEntity<>(new CustomResponse(certificateService.issue(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
     }
 
