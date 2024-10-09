@@ -20,8 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Service class for managing students.
  * <p>
- * This class provides services for creating, retrieving, updating, and deleting students. It interacts with the {@link StudentRepository}
- * and {@link UserService} to perform operations on {@link Student} entities.
+ * This class provides services for creating, retrieving, updating, and deleting students. It interacts with the {@link StudentRepository}.
  * </p>
  */
 @Service

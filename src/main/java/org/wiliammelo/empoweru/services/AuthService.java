@@ -27,6 +27,7 @@ import org.wiliammelo.empoweru.repositories.ProfessorRepository;
 import org.wiliammelo.empoweru.repositories.StudentRepository;
 import org.wiliammelo.empoweru.repositories.UserRepository;
 
+//TODO: SEND WELCOME MESSAGE WHEN REGISTERING
 @Service
 @AllArgsConstructor
 public class AuthService {
