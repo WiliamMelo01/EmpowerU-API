@@ -32,15 +32,9 @@ public class StudentController {
         return new ResponseEntity<>(this.studentService.findById(id), HttpStatus.OK);
     }
 
-    // ADMIN
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable UUID id) throws UserNotFoundException {
-        return new ResponseEntity<>(this.studentService.deleteById(id), HttpStatus.OK);
-    }
-
     @DeleteMapping("/")
-    public ResponseEntity<String> delete(@AuthenticationPrincipal User user) throws UserNotFoundException {
-        return new ResponseEntity<>(this.studentService.delete(user.getId()), HttpStatus.OK);
+    public ResponseEntity<String> deleteById(@AuthenticationPrincipal User user) throws UserNotFoundException {
+        return new ResponseEntity<>(this.studentService.deleteById(user.getId()), HttpStatus.OK);
     }
 
     @PutMapping("/")

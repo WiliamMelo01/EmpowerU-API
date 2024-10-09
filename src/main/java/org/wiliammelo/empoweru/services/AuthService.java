@@ -25,14 +25,15 @@ import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.models.UserRole;
 import org.wiliammelo.empoweru.repositories.ProfessorRepository;
 import org.wiliammelo.empoweru.repositories.StudentRepository;
+import org.wiliammelo.empoweru.repositories.UserRepository;
 
 @Service
 @AllArgsConstructor
 public class AuthService {
 
-    private final UserService userService;
     private final StudentRepository studentRepository;
     private final ProfessorRepository professorRepository;
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
@@ -40,24 +41,25 @@ public class AuthService {
     @Transactional
     @CacheEvict(value = "student", allEntries = true)
     public StudentDTO registerStudent(CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
-        User user = this.userService.create(StudentMapper.INSTANCE.toUser(createStudentDTO));
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        user.setRole(UserRole.STUDENT);
-        Student student = new Student();
-        student.setUser(user);
+        this.verifyConflict(createStudentDTO.getEmail());
+
+        Student student = StudentMapper.INSTANCE.toStudent(createStudentDTO);
+        student.setPassword(bCryptPasswordEncoder.encode(student.getPassword()));
+        student.setRole(UserRole.STUDENT);
+
         return StudentMapper.INSTANCE.toStudentDTO(this.studentRepository.save(student));
     }
 
     @Transactional
     @CacheEvict(value = "professor", allEntries = true)
     public ProfessorDTO registerProfessor(CreateProfessorDTO createProfessorDTO) throws UserAlreadyExistsException {
-        User user = this.userService.create(ProfessorMapper.INSTANCE.toUser(createProfessorDTO));
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        user.setRole(UserRole.PROFESSOR);
-        Professor professor = new Professor();
+        this.verifyConflict(createProfessorDTO.getEmail());
+
+        Professor professor = ProfessorMapper.INSTANCE.toProfessor(createProfessorDTO);
+        professor.setPassword(bCryptPasswordEncoder.encode(professor.getPassword()));
+        professor.setRole(UserRole.PROFESSOR);
         professor.setImageUrl(createProfessorDTO.getImageUrl());
         professor.setBio(createProfessorDTO.getBio());
-        professor.setUser(user);
         return ProfessorMapper.INSTANCE.toProfessorDTO(this.professorRepository.save(professor));
     }
 
@@ -73,6 +75,12 @@ public class AuthService {
                 getRole(auth)
         );
 
+    }
+
+    private void verifyConflict(String email) throws UserAlreadyExistsException {
+        if (this.userRepository.existsByEmail(email) == Boolean.TRUE) {
+            throw new UserAlreadyExistsException("User already exists");
+        }
     }
 
     private String getRole(Authentication auth) {

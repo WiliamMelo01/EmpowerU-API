@@ -40,14 +40,14 @@ public class CourseService {
      * Creates a new course based on the provided {@link CreateCourseDTO} object.
      *
      * @param createCourseDTO The course creation details.
-     * @param userId          The UUID of the user creating the course.
+     * @param studentId       The UUID of the professor creating the course.
      * @return The created course as a {@link CourseDTO}.
      * @throws UserNotFoundException if the professor with the specified ID does not exist.
      */
     @CacheEvict(value = "course", allEntries = true)
     @Transactional
-    public CourseDTO create(CreateCourseDTO createCourseDTO, UUID userId) throws UserNotFoundException {
-        Professor professor = this.professorRepository.findByUserId(userId)
+    public CourseDTO create(CreateCourseDTO createCourseDTO, UUID studentId) throws UserNotFoundException {
+        Professor professor = this.professorRepository.findById(studentId)
                 .orElseThrow(ProfessorNotFoundException::new);
 
         Course course = CourseMapper.INSTANCE.toCourse(createCourseDTO);
@@ -102,15 +102,15 @@ public class CourseService {
     /**
      * Retrieves detailed information about a course for an authenticated user.
      *
-     * @param id     The UUID of the course to find.
-     * @param userId The UUID of the authenticated user (student).
+     * @param id        The UUID of the course to find.
+     * @param studentId The UUID of the authenticated student.
      * @return A {@link AuthenticatedCourseDetailedDTO} object containing detailed information about the course, including watched videos and enrollment status.
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      * @throws UserNotFoundException   if the student with the specified ID does not exist.
      */
-    @Cacheable(value = "course", key = "#id.toString()+#userId.toString()")
-    public Object findByIdAuthenticated(UUID id, UUID userId) throws CourseNotFoundException, UserNotFoundException {
-        Student student = this.studentRepository.findByUserId(userId)
+    @Cacheable(value = "course", key = "#id.toString()+#studentId.toString()")
+    public Object findByIdAuthenticated(UUID id, UUID studentId) throws CourseNotFoundException, UserNotFoundException {
+        Student student = this.studentRepository.findById(studentId)
                 .orElseThrow(StudentNotFoundException::new);
 
         Course course = this.courseRepository.findById(id)
@@ -179,7 +179,7 @@ public class CourseService {
     public CourseDTO update(UUID courseId, UpdateCourseDTO updateCourseDTO, UUID requesterId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
-        Professor professor = professorRepository.findByUserId(requesterId)
+        Professor professor = professorRepository.findById(requesterId)
                 .orElseThrow(ProfessorNotFoundException::new);
 
         if (professor != null && isTheOwner(courseId, professor.getId())) {
@@ -222,7 +222,7 @@ public class CourseService {
     public String delete(UUID courseId, UUID requesterId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
-        Professor professor = professorRepository.findByUserId(requesterId)
+        Professor professor = professorRepository.findById(requesterId)
                 .orElseThrow(ProfessorNotFoundException::new);
 
         if (professor != null && isTheOwner(courseId, professor.getId())) {
@@ -251,18 +251,18 @@ public class CourseService {
     /**
      * Enrolls a student into a specified course.
      *
-     * @param courseId The UUID of the course to enroll the student in.
-     * @param userId   The UUID of the student to enroll in the course.
+     * @param courseId  The UUID of the course to enroll the student in.
+     * @param studentId The UUID of the student to enroll in the course.
      * @return A confirmation message indicating the student has been successfully enrolled.
      * @throws CourseNotFoundException if the course with the specified ID does not exist.
      * @throws UserNotFoundException   if the student with the specified ID does not exist.
      */
-    @CacheEvict(value = "course", key = "#courseId.toString()+#userId.toString()")
-    public String enroll(UUID courseId, UUID userId) throws CourseNotFoundException, UserNotFoundException, UserAlreadyEnrolledException {
+    @CacheEvict(value = "course", key = "#courseId.toString()+#studentId.toString()")
+    public String enroll(UUID courseId, UUID studentId) throws CourseNotFoundException, UserNotFoundException, UserAlreadyEnrolledException {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
 
-        Student student = this.studentRepository.findByUserId(userId)
+        Student student = this.studentRepository.findById(studentId)
                 .orElseThrow(StudentNotFoundException::new);
 
         if (course.getStudents().contains(student)) {
@@ -278,19 +278,19 @@ public class CourseService {
     /**
      * Disenroll a student from a specific course.
      *
-     * @param courseId The UUID of the course to disenroll the student from.
-     * @param userId   The UUID of the student to disenroll from the course.
+     * @param courseId  The UUID of the course to disenroll the student from.
+     * @param studentId The UUID of the student to disenroll from the course.
      * @return A confirmation message indicating the student has been successfully disenrolled.
      * @throws CourseNotFoundException  if the course with the specified ID does not exist.
      * @throws UserNotFoundException    if the student with the specified ID does not exist.
      * @throws UserNotEnrolledException if the student is not enrolled in the course.
      */
-    @CacheEvict(value = "course", key = "#courseId.toString()+#userId.toString()")
-    public String disenroll(UUID courseId, UUID userId) throws CourseNotFoundException, UserNotFoundException, UserNotEnrolledException {
+    @CacheEvict(value = "course", key = "#courseId.toString()+#studentId.toString()")
+    public String disenroll(UUID courseId, UUID studentId) throws CourseNotFoundException, UserNotFoundException, UserNotEnrolledException {
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(CourseNotFoundException::new);
 
-        Student student = this.studentRepository.findByUserId(userId)
+        Student student = this.studentRepository.findById(studentId)
                 .orElseThrow(StudentNotFoundException::new);
 
         boolean removed = course.getStudents().remove(student);

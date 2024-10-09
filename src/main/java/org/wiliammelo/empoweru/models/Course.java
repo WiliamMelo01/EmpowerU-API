@@ -21,7 +21,6 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-
     private String title;
 
     @Column(length = 1000, nullable = false)

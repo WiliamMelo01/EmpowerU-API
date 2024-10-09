@@ -161,10 +161,10 @@ public class VideoService {
     }
 
     @CacheEvict(value = "course", allEntries = true)
-    public VideoWatched markAsWatched(UUID videoId, UUID userId) throws VideoNotFoundException, UserNotFoundException {
+    public VideoWatched markAsWatched(UUID videoId, UUID studentId) throws VideoNotFoundException, UserNotFoundException {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(VideoNotFoundException::new);
-        Student student = studentRepository.findByUserId(userId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(UserNotFoundException::new);
 
         VideoWatched videoWatched = new VideoWatched();
@@ -204,7 +204,7 @@ public class VideoService {
      * @return true if the requesterId matches the owner of the course, false otherwise.
      */
     private boolean isTheOwner(UUID courseId, UUID requesterId) throws ProfessorNotFoundException {
-        Professor professor = professorRepository.findByUserId(requesterId)
+        Professor professor = professorRepository.findById(requesterId)
                 .orElseThrow(ProfessorNotFoundException::new);
         return courseRepository.isTheOwner(courseId, professor.getId());
     }

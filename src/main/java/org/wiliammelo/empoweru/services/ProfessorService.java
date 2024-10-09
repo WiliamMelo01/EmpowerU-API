@@ -11,7 +11,6 @@ import org.wiliammelo.empoweru.exceptions.ProfessorNotFoundException;
 import org.wiliammelo.empoweru.exceptions.UserNotFoundException;
 import org.wiliammelo.empoweru.mappers.ProfessorMapper;
 import org.wiliammelo.empoweru.models.Professor;
-import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.repositories.ProfessorRepository;
 
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 public class ProfessorService {
 
     private final ProfessorRepository professorRepository;
-    private final UserService userService;
 
     /**
      * Finds a professor by their ID.
@@ -57,24 +55,6 @@ public class ProfessorService {
     }
 
     /**
-     * Deletes a professor based on user object.
-     *
-     * @param userId The id of the user to be updated.
-     * @return A success message indicating the deletion.
-     * @throws UserNotFoundException if the user with the specified ID does not exist.
-     */
-    @CacheEvict(value = "professor", allEntries = true)
-    @Transactional
-    public String delete(UUID userId) throws UserNotFoundException {
-        Professor professor = this.professorRepository.findByUserId(userId)
-                .orElseThrow(ProfessorNotFoundException::new);
-
-        this.userService.deleteById(userId);
-        this.professorRepository.delete(professor);
-        return "Professor with ID: " + professor.getId() + " deleted successfully.";
-    }
-
-    /**
      * Deletes a professor by their ID.
      *
      * @param professorId The UUID of the professor to delete.
@@ -87,7 +67,6 @@ public class ProfessorService {
         Professor professor = this.professorRepository.findById(professorId)
                 .orElseThrow(ProfessorNotFoundException::new);
 
-        this.userService.deleteById(professor.getUser().getId());
         this.professorRepository.delete(professor);
         return "Professor with ID: " + professor.getId() + " deleted successfully.";
     }
@@ -95,21 +74,20 @@ public class ProfessorService {
     /**
      * Updates a professor with the given {@link UpdateProfessorDTO} object.
      *
-     * @param userId       The id of the user to be updated.
+     * @param professorId  The id of the professor to be updated.
      * @param professorDTO The updated professor details.
      * @return The updated professor as a {@link ProfessorDTO}.
      * @throws ProfessorNotFoundException if the professor with the specified ID does not exist.
      */
     @CacheEvict(value = "professor", allEntries = true)
     @Transactional
-    public ProfessorDTO update(UUID userId, UpdateProfessorDTO professorDTO) throws ProfessorNotFoundException {
-        Professor professor = this.professorRepository.findByUserId(userId)
+    public ProfessorDTO update(UUID professorId, UpdateProfessorDTO professorDTO) throws ProfessorNotFoundException {
+        Professor professor = this.professorRepository.findById(professorId)
                 .orElseThrow(ProfessorNotFoundException::new);
 
-        User user = professor.getUser();
-        user.setName(professorDTO.getName());
-        user.setEmail(professorDTO.getEmail());
-        user.setGender(professorDTO.getGender());
+        professor.setName(professorDTO.getName());
+        professor.setEmail(professorDTO.getEmail());
+        professor.setGender(professorDTO.getGender());
         professor.setBio(professorDTO.getBio());
         professor.setImageUrl(professorDTO.getImageUrl());
 

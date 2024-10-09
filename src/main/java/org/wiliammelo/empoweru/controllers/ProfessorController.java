@@ -33,13 +33,8 @@ public class ProfessorController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<String> delete(@AuthenticationPrincipal User user) throws UserNotFoundException {
-        return new ResponseEntity<>(this.professorService.delete(user.getId()), HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable UUID id) throws UserNotFoundException {
-        return new ResponseEntity<>(this.professorService.deleteById(id), HttpStatus.OK);
+    public ResponseEntity<String> deleteById(@AuthenticationPrincipal User user) throws UserNotFoundException {
+        return new ResponseEntity<>(this.professorService.deleteById(user.getId()), HttpStatus.OK);
     }
 
     @PutMapping("/")
