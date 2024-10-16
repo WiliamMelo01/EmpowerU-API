@@ -1,13 +1,19 @@
 package org.wiliammelo.empoweru.services;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.wiliammelo.empoweru.clients.MessagePublisher;
 import org.wiliammelo.empoweru.configuration.security.JWTService;
 import org.wiliammelo.empoweru.dtos.LoginDTO;
 import org.wiliammelo.empoweru.dtos.TokenResponse;
@@ -27,9 +33,8 @@ import org.wiliammelo.empoweru.repositories.ProfessorRepository;
 import org.wiliammelo.empoweru.repositories.StudentRepository;
 import org.wiliammelo.empoweru.repositories.UserRepository;
 
-//TODO: SEND WELCOME MESSAGE WHEN REGISTERING
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AuthService {
 
     private final StudentRepository studentRepository;
@@ -39,6 +44,12 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
 
+    @Qualifier("greetingsSQSPublisher")
+    private final MessagePublisher welcomeMessagePublisher;
+
+    @Value("${spring.profiles.active}")
+    private String profile;
+
     @Transactional
     @CacheEvict(value = "student", allEntries = true)
     public StudentDTO registerStudent(CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
@@ -47,6 +58,8 @@ public class AuthService {
         Student student = StudentMapper.INSTANCE.toStudent(createStudentDTO);
         student.setPassword(bCryptPasswordEncoder.encode(student.getPassword()));
         student.setRole(UserRole.STUDENT);
+
+        welcomeMessagePublisher.publish(student.getEmail());
 
         return StudentMapper.INSTANCE.toStudentDTO(this.studentRepository.save(student));
     }
@@ -61,21 +74,44 @@ public class AuthService {
         professor.setRole(UserRole.PROFESSOR);
         professor.setImageUrl(createProfessorDTO.getImageUrl());
         professor.setBio(createProfessorDTO.getBio());
+
+        welcomeMessagePublisher.publish(professor.getEmail());
+
         return ProfessorMapper.INSTANCE.toProfessorDTO(this.professorRepository.save(professor));
     }
 
-    public TokenResponse login(LoginDTO loginDTO) throws CustomException {
+    public TokenResponse login(LoginDTO loginDTO, HttpServletResponse response) throws CustomException {
         var usernamePassword = new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
         String accessToken = jwtService.generateAccessToken((User) auth.getPrincipal());
-        String refreshToken = jwtService.generateRefreshToken((User) auth.getPrincipal());
+        response.addCookie(createRefreshTokenCookie((User) auth.getPrincipal()));
 
         return new TokenResponse(accessToken,
-                refreshToken,
                 getRole(auth)
         );
 
+    }
+
+    public TokenResponse refreshToken(String refreshToken, HttpServletResponse response) throws CustomException {
+
+        if (refreshToken == null) {
+            throw new CustomException("Invalid token", HttpStatus.UNAUTHORIZED.value());
+        }
+
+        String email = jwtService.validateRefreshToken(refreshToken);
+
+        if (email == null) {
+            throw new CustomException("Invalid token", HttpStatus.UNAUTHORIZED.value());
+        }
+
+        User user = (User) userRepository.findByEmail(email);
+
+        TokenResponse newTokenResponse = new TokenResponse(jwtService.generateAccessToken(user), user.getRole().getRole());
+
+        response.addCookie(createRefreshTokenCookie(user));
+
+        return newTokenResponse;
     }
 
     private void verifyConflict(String email) throws UserAlreadyExistsException {
@@ -91,6 +127,19 @@ public class AuthService {
                 .get()
                 .getAuthority()
                 .replace("ROLE_", "");
+    }
+
+    private Cookie createRefreshTokenCookie(User user) throws CustomException {
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setMaxAge(30 * 24 * 60 * 60);
+        refreshTokenCookie.setPath("/");
+        if (profile.equals("prod")) {
+            refreshTokenCookie.setSecure(true);
+        }
+        return refreshTokenCookie;
     }
 
 }

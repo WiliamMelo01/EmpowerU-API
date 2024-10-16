@@ -1,5 +1,6 @@
 package org.wiliammelo.empoweru.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,6 @@ import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.exceptions.CustomException;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
-import org.wiliammelo.empoweru.models.User;
 import org.wiliammelo.empoweru.repositories.UserRepository;
 import org.wiliammelo.empoweru.services.AuthService;
 
@@ -38,31 +38,15 @@ public class AuthController {
     }
 
     @PostMapping("/public/login")
-    public ResponseEntity<TokenResponse> loginProfessor(@Valid @RequestBody LoginDTO loginDTO) throws CustomException {
-        TokenResponse tokenResponse = authService.login(loginDTO);
+    public ResponseEntity<TokenResponse> loginProfessor(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) throws CustomException {
+        TokenResponse tokenResponse = authService.login(loginDTO, response);
         return new ResponseEntity<>(tokenResponse, HttpStatus.OK);
     }
 
     @PostMapping("/public/refresh")
-    public ResponseEntity<TokenResponse> refresh(@RequestHeader("Authorization") String authorization) throws CustomException {
-
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new CustomException("Invalid token", HttpStatus.UNAUTHORIZED.value());
-        }
-
-        String refreshToken = authorization.substring(7);
-
-        String email = jwtService.validateRefreshToken(refreshToken);
-
-        if (email == null) {
-            throw new CustomException("Invalid token", HttpStatus.UNAUTHORIZED.value());
-        }
-
-        User user = (User) userRepository.findByEmail(email);
-
-        TokenResponse newTokenResponse = new TokenResponse(jwtService.generateAccessToken(user), refreshToken, user.getRole().getRole());
-
-        return ResponseEntity.ok(newTokenResponse);
+    public ResponseEntity<TokenResponse> refresh(@CookieValue("refreshToken") String refreshToken, HttpServletResponse response) throws CustomException {
+        TokenResponse tokenResponse = authService.refreshToken(refreshToken, response);
+        return new ResponseEntity<>(tokenResponse, HttpStatus.OK);
     }
 
 
