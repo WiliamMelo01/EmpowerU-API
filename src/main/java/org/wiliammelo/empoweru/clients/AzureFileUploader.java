@@ -1,4 +1,4 @@
-package org.wiliammelo.empoweru.file_upload;
+package org.wiliammelo.empoweru.clients;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
