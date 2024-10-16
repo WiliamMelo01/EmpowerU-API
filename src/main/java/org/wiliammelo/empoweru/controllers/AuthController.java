@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.wiliammelo.empoweru.configuration.security.JWTService;
 import org.wiliammelo.empoweru.dtos.LoginDTO;
 import org.wiliammelo.empoweru.dtos.TokenResponse;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
@@ -15,7 +14,6 @@ import org.wiliammelo.empoweru.dtos.student.CreateStudentDTO;
 import org.wiliammelo.empoweru.dtos.student.StudentDTO;
 import org.wiliammelo.empoweru.exceptions.CustomException;
 import org.wiliammelo.empoweru.exceptions.UserAlreadyExistsException;
-import org.wiliammelo.empoweru.repositories.UserRepository;
 import org.wiliammelo.empoweru.services.AuthService;
 
 @RestController
@@ -24,8 +22,6 @@ import org.wiliammelo.empoweru.services.AuthService;
 public class AuthController {
 
     private final AuthService authService;
-    private final JWTService jwtService;
-    private final UserRepository userRepository;
 
     @PostMapping("/public/register/student")
     public ResponseEntity<StudentDTO> registerStudent(@Valid @RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
