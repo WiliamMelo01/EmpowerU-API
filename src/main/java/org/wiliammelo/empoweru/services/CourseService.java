@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.course.*;
+import org.wiliammelo.empoweru.dtos.video.VideoWithStatusDTO;
 import org.wiliammelo.empoweru.exceptions.*;
 import org.wiliammelo.empoweru.mappers.CourseMapper;
 import org.wiliammelo.empoweru.models.Course;
@@ -68,7 +69,7 @@ public class CourseService {
                 .map(course -> {
                     CourseDTO dto = CourseMapper.INSTANCE.toCourseDto(course);
                     dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
-                    dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
+                    dto.setDurationInSeconds(this.getTotalDurationInSeconds(course));
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -88,14 +89,14 @@ public class CourseService {
 
         if (includeDetails) {
             PublicCourseDetailedDTO dto = CourseMapper.INSTANCE.toPublicCourseDetailedDto(course);
-            dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
-            dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
+            dto.setVideosCount(this.getTotalVideosCount(course));
+            dto.setDurationInSeconds(this.getTotalDurationInSeconds(course));
             return dto;
         }
 
         CourseDTO dto = CourseMapper.INSTANCE.toCourseDto(course);
-        dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
-        dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
+        dto.setVideosCount(this.getTotalVideosCount(course));
+        dto.setDurationInSeconds(this.getTotalDurationInSeconds(course));
         return dto;
     }
 
@@ -119,9 +120,9 @@ public class CourseService {
         List<VideoWatched> videoWatchedList = videoWatchedRepository.findAllByStudentId(student.getId());
 
         AuthenticatedCourseDetailedDTO dto = CourseMapper.INSTANCE.toAuthenticatedCourseDetailedDTO(course);
-        dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
-        dto.setDurationInSeconds(course.getSections().stream().mapToLong(s -> s.getVideos().stream().mapToLong(v -> (long) v.getDurationInSeconds()).sum()).sum());
-        dto.getSections().forEach(section -> section.getVideos().forEach(video -> video.setWatched(videoWatchedList.stream().anyMatch(vw -> vw.getVideoId().equals(video.getId())))));
+        dto.setVideosCount(this.getTotalVideosCount(course));
+        dto.setDurationInSeconds(this.getTotalDurationInSeconds(course));
+        dto.getSections().forEach(section -> section.getVideos().forEach(video -> markVideoWatchedStatus(video, videoWatchedList)));
         dto.setEnrolled(enrollmentRepository.isStudentEnrolled(id, student.getId()));
 
         return dto;
@@ -322,6 +323,44 @@ public class CourseService {
      */
     private boolean isAdmin(UUID userId) {
         return this.userRepository.isAdmin(userId);
+    }
+
+    /**
+     * Returns the total number of videos in a course.
+     *
+     * @param course The course to count videos from.
+     * @return The total number of videos in the course.
+     */
+    private int getTotalVideosCount(Course course) {
+        return course.getSections().stream()
+                .mapToInt(section -> section.getVideos().size())
+                .sum();
+    }
+
+    /**
+     * Returns the total duration of all videos in the course in seconds.
+     *
+     * @param course The course to calculate duration from.
+     * @return The total duration in seconds.
+     */
+    private long getTotalDurationInSeconds(Course course) {
+        return course.getSections().stream()
+                .mapToLong(section -> section.getVideos().stream()
+                        .mapToLong(video -> (long) video.getDurationInSeconds())
+                        .sum())
+                .sum();
+    }
+
+    /**
+     * Marks a video watched status based on the provided list of watched videos.
+     *
+     * @param video         The video to mark.
+     * @param videosWatched The list of watched videos.
+     */
+    private void markVideoWatchedStatus(VideoWithStatusDTO video, List<VideoWatched> videosWatched) {
+        boolean isWatched = videosWatched.stream()
+                .anyMatch(vw -> vw.getVideoId().equals(video.getId()));
+        video.setWatched(isWatched);
     }
 
 }
