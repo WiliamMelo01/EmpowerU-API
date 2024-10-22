@@ -35,8 +35,8 @@ public class CertificateService {
 
     private static final float MIN_GRADE = 7.0f;
 
-    public String issue(UUID courseId, UUID requesterId) throws CourseNotFoundException, CanNotIssueCertificateException, UserNotFoundException {
-        Student student = studentRepository.findByUserId(requesterId)
+    public String issue(UUID courseId, UUID studentId) throws CourseNotFoundException, CanNotIssueCertificateException, UserNotFoundException {
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(UserNotFoundException::new);
 
         Course course = courseRepository.findById(courseId)
@@ -44,9 +44,9 @@ public class CertificateService {
 
         if (canIssueCertificate(student.getId(), course)) {
             IssueCertificateRequestDTO issueCertificateRequestDTO = IssueCertificateRequestDTO.builder()
-                    .userName(student.getUser().getEmail())
+                    .userName(student.getEmail())
                     .courseTitle(course.getTitle())
-                    .email(student.getUser().getEmail())
+                    .email(student.getEmail())
                     .build();
             certificateIssueMessagePublisher.publish(issueCertificateRequestDTO);
             return "Issue in progress. As soon as it is ready, you will receive an email.";

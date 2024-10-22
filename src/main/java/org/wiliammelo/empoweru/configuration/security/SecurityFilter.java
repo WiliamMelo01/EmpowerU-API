@@ -23,7 +23,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, java.io.IOException {
         String token = recoverToken(request);
         if (token != null) {
-            String email = jwtService.validateToken(token);
+            String email = jwtService.validateAccessToken(token);
             if (email != null) {
                 UserDetails user = userRepository.findByEmail(email);
 

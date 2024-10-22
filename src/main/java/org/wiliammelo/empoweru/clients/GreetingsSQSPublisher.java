@@ -14,8 +14,13 @@ public class GreetingsSQSPublisher implements MessagePublisher {
     @Value("${aws.sqs.greetings-queue-name}")
     private String greetingsQueueName;
 
+    @Value("${spring.profiles.active}")
+    private String profile;
+
     @Override
     public void publish(Object message) {
-        defJmsTemplate.convertAndSend(greetingsQueueName, message);
+        if (profile.equals("prod")) {
+            defJmsTemplate.convertAndSend(greetingsQueueName, message);
+        }
     }
 }

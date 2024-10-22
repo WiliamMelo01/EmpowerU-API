@@ -41,9 +41,23 @@ public interface StudentMapper {
      * @param student The Student entity to convert.
      * @return The converted StudentDTO.
      */
-    @Mapping(source = "user.name", target = "name")
-    @Mapping(source = "user.email", target = "email")
-    @Mapping(source = "user.gender", target = "gender")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "email", target = "email")
+    @Mapping(source = "gender", target = "gender")
     StudentDTO toStudentDTO(Student student);
 
+    /**
+     * Converts a CreateStudentDTO to a Student entity.
+     *
+     * @param createStudentDTO The CreateStudentDTO to convert.
+     * @return The converted Student entity.
+     */
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "gender", source = "gender")
+    @Mapping(target = "password", source = "password")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    Student toStudent(CreateStudentDTO createStudentDTO);
 }

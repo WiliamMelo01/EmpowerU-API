@@ -35,26 +35,26 @@ public interface CourseMapper {
      * @param course The Course entity to convert.
      * @return The converted CourseDTO.
      */
-    @Mapping(source = "professor.user.name", target = "professor.name")
-    @Mapping(source = "professor.user.email", target = "professor.email")
-    @Mapping(source = "professor.user.gender", target = "professor.gender")
+    @Mapping(source = "professor.name", target = "professor.name")
+    @Mapping(source = "professor.email", target = "professor.email")
+    @Mapping(source = "professor.gender", target = "professor.gender")
     @Mapping(source = "professor.id", target = "professor.id")
     @Mapping(source = "professor.imageUrl", target = "professor.imageURL")
     @Mapping(source = "professor.bio", target = "professor.bio")
     CourseDTO toCourseDto(Course course);
 
-    @Mapping(source = "professor.user.name", target = "professor.name")
-    @Mapping(source = "professor.user.email", target = "professor.email")
-    @Mapping(source = "professor.user.gender", target = "professor.gender")
+    @Mapping(source = "professor.name", target = "professor.name")
+    @Mapping(source = "professor.email", target = "professor.email")
+    @Mapping(source = "professor.gender", target = "professor.gender")
     @Mapping(source = "professor.id", target = "professor.id")
     @Mapping(source = "professor.imageUrl", target = "professor.imageURL")
     @Mapping(source = "professor.bio", target = "professor.bio")
     @Mapping(source = "sections", target = "sections")
     PublicCourseDetailedDTO toPublicCourseDetailedDto(Course course);
 
-    @Mapping(source = "professor.user.name", target = "professor.name")
-    @Mapping(source = "professor.user.email", target = "professor.email")
-    @Mapping(source = "professor.user.gender", target = "professor.gender")
+    @Mapping(source = "professor.name", target = "professor.name")
+    @Mapping(source = "professor.email", target = "professor.email")
+    @Mapping(source = "professor.gender", target = "professor.gender")
     @Mapping(source = "professor.id", target = "professor.id")
     @Mapping(source = "professor.imageUrl", target = "professor.imageURL")
     @Mapping(source = "professor.bio", target = "professor.bio")

@@ -1,14 +1,11 @@
 package org.wiliammelo.empoweru.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.wiliammelo.empoweru.configuration.security.JWTService;
+import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.dtos.LoginDTO;
 import org.wiliammelo.empoweru.dtos.TokenResponse;
 import org.wiliammelo.empoweru.dtos.professor.CreateProfessorDTO;
@@ -25,7 +22,6 @@ import org.wiliammelo.empoweru.services.AuthService;
 public class AuthController {
 
     private final AuthService authService;
-    private final JWTService jwtService;
 
     @PostMapping("/public/register/student")
     public ResponseEntity<StudentDTO> registerStudent(@Valid @RequestBody CreateStudentDTO createStudentDTO) throws UserAlreadyExistsException {
@@ -38,9 +34,15 @@ public class AuthController {
     }
 
     @PostMapping("/public/login")
-    public ResponseEntity<TokenResponse> loginProfessor(@Valid @RequestBody LoginDTO loginDTO) throws CustomException {
-        String token = authService.login(loginDTO);
-        return new ResponseEntity<>(new TokenResponse(token, jwtService.getRole(token)), HttpStatus.OK);
+    public ResponseEntity<TokenResponse> loginProfessor(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) throws CustomException {
+        TokenResponse tokenResponse = authService.login(loginDTO, response);
+        return new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+    }
+
+    @PostMapping("/public/refresh")
+    public ResponseEntity<TokenResponse> refresh(@CookieValue("refreshToken") String refreshToken, HttpServletResponse response) throws CustomException {
+        TokenResponse tokenResponse = authService.refreshToken(refreshToken, response);
+        return new ResponseEntity<>(tokenResponse, HttpStatus.OK);
     }
 
 

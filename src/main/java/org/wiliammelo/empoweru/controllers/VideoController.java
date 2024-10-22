@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.wiliammelo.empoweru.dtos.CustomResponse;
@@ -31,9 +31,9 @@ public class VideoController {
     }, produces = {
             "application/json"
     })
-    public ResponseEntity<Object> create(@RequestPart("video") @Valid CreateVideoDTO createVideoDTO,
+    public ResponseEntity<Object> create(@AuthenticationPrincipal User user,
+                                         @RequestPart("video") @Valid CreateVideoDTO createVideoDTO,
                                          @RequestPart("file") MultipartFile file) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         try {
             return new ResponseEntity<>(this.videoService.create(createVideoDTO, file, user.getId()), HttpStatus.CREATED);
@@ -51,8 +51,7 @@ public class VideoController {
     }
 
     @DeleteMapping("/{videoId}")
-    public ResponseEntity<CustomResponse> delete(@PathVariable("videoId") UUID courseId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<CustomResponse> delete(@PathVariable("videoId") UUID courseId, @AuthenticationPrincipal User user) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
 
         String message = this.videoService.delete(courseId, user.getId());
 
@@ -60,10 +59,10 @@ public class VideoController {
     }
 
     @PutMapping("/{videoId}")
-    public ResponseEntity<VideoDTO> update(@RequestPart("video") @Valid UpdateVideoDTO updateVideoDTO,
+    public ResponseEntity<VideoDTO> update(@AuthenticationPrincipal User user,
+                                           @RequestPart("video") @Valid UpdateVideoDTO updateVideoDTO,
                                            @RequestPart("file") MultipartFile file,
                                            @PathVariable("videoId") UUID courseId) throws SectionNotFoundException, VideoNotFoundException, IOException, UnauthorizedException, ProfessorNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         VideoDTO video = this.videoService.update(courseId, updateVideoDTO, file, user.getId());
 
@@ -71,8 +70,7 @@ public class VideoController {
     }
 
     @PostMapping("/mark-as-watched/{id}")
-    public ResponseEntity<VideoWatched> markAsWatched(@PathVariable("id") UUID videoId) throws UserNotFoundException, VideoNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<VideoWatched> markAsWatched(@PathVariable("id") UUID videoId, @AuthenticationPrincipal User user) throws UserNotFoundException, VideoNotFoundException {
         return new ResponseEntity<>(this.videoService.markAsWatched(videoId, user.getId()), HttpStatus.OK);
     }
 

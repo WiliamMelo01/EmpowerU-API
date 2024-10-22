@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.wiliammelo.empoweru.clients.FileUploader;
 import org.wiliammelo.empoweru.dtos.video.CreateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.UpdateVideoDTO;
 import org.wiliammelo.empoweru.dtos.video.VideoDTO;
 import org.wiliammelo.empoweru.exceptions.*;
-import org.wiliammelo.empoweru.file_upload.FileUploader;
 import org.wiliammelo.empoweru.mappers.VideoMapper;
 import org.wiliammelo.empoweru.models.*;
 import org.wiliammelo.empoweru.repositories.*;
@@ -161,10 +161,10 @@ public class VideoService {
     }
 
     @CacheEvict(value = "course", allEntries = true)
-    public VideoWatched markAsWatched(UUID videoId, UUID userId) throws VideoNotFoundException, UserNotFoundException {
+    public VideoWatched markAsWatched(UUID videoId, UUID studentId) throws VideoNotFoundException, UserNotFoundException {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(VideoNotFoundException::new);
-        Student student = studentRepository.findByUserId(userId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(UserNotFoundException::new);
 
         VideoWatched videoWatched = new VideoWatched();
@@ -204,7 +204,7 @@ public class VideoService {
      * @return true if the requesterId matches the owner of the course, false otherwise.
      */
     private boolean isTheOwner(UUID courseId, UUID requesterId) throws ProfessorNotFoundException {
-        Professor professor = professorRepository.findByUserId(requesterId)
+        Professor professor = professorRepository.findById(requesterId)
                 .orElseThrow(ProfessorNotFoundException::new);
         return courseRepository.isTheOwner(courseId, professor.getId());
     }

@@ -1,4 +1,4 @@
-package org.wiliammelo.empoweru.file_upload;
+package org.wiliammelo.empoweru.clients;
 
 import org.springframework.web.multipart.MultipartFile;
 

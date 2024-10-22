@@ -26,9 +26,9 @@ public interface ProfessorMapper {
      * @param professor The Professor entity to convert.
      * @return The converted ProfessorDTO.
      */
-    @Mapping(source = "user.name", target = "name")
-    @Mapping(source = "user.email", target = "email")
-    @Mapping(source = "user.gender", target = "gender")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "email", target = "email")
+    @Mapping(source = "gender", target = "gender")
     @Mapping(source = "imageUrl", target = "imageURL")
     ProfessorDTO toProfessorDTO(Professor professor);
 
@@ -48,4 +48,14 @@ public interface ProfessorMapper {
         return user;
     }
 
+    @Mapping(source = "imageUrl", target = "imageUrl")
+    @Mapping(source = "bio", target = "bio")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "email", target = "email")
+    @Mapping(source = "gender", target = "gender")
+    @Mapping(source = "password", target = "password")
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "authorities", ignore = true)
+    Professor toProfessor(CreateProfessorDTO createProfessorDTO);
 }

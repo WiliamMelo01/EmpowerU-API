@@ -151,7 +151,7 @@ public class SectionService {
      * @return true if the requester is the owner of the course, false otherwise.
      */
     private boolean isTheOwner(UUID requesterId, UUID courseId) throws ProfessorNotFoundException {
-        Professor professor = professorRepository.findByUserId(requesterId)
+        Professor professor = professorRepository.findById(requesterId)
                 .orElseThrow(ProfessorNotFoundException::new);
         return courseRepository.isTheOwner(courseId, professor.getId());
     }

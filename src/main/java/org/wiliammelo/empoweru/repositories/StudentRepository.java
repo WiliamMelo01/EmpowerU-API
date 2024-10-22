@@ -1,6 +1,5 @@
 package org.wiliammelo.empoweru.repositories;
 
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -12,8 +11,7 @@ import java.util.UUID;
 @Repository
 public interface StudentRepository extends CrudRepository<Student, UUID> {
 
-    @Query("SELECT s FROM Student s WHERE s.user.id = :userId")
-    Optional<Student> findByUserId(@Param("userId") UUID userId);
+    Optional<Student> findById(@Param("userId") UUID id);
 
     boolean existsById(UUID id);
 }

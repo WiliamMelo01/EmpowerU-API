@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.wiliammelo.empoweru.dtos.CustomResponse;
 import org.wiliammelo.empoweru.dtos.course.CourseDTO;
@@ -32,8 +32,7 @@ public class CourseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> findById(@PathVariable("id") UUID id) throws CourseNotFoundException, UserNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<Object> findById(@PathVariable("id") UUID id, @AuthenticationPrincipal User user) throws CourseNotFoundException, UserNotFoundException {
         return new ResponseEntity<>(this.courseService.findByIdAuthenticated(id, user.getId()), HttpStatus.OK);
     }
 
@@ -62,32 +61,29 @@ public class CourseController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<CourseDTO> create(@Valid @RequestBody CreateCourseDTO createCourseDTO) throws UserNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<CourseDTO> create(@Valid @RequestBody CreateCourseDTO createCourseDTO, @AuthenticationPrincipal User user) throws UserNotFoundException {
         return new ResponseEntity<>(this.courseService.create(createCourseDTO, user.getId()), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID courseId, @RequestBody @Valid UpdateCourseDTO updateCourseDTO) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<CourseDTO> update(@PathVariable("id") UUID courseId,
+                                            @RequestBody @Valid UpdateCourseDTO updateCourseDTO,
+                                            @AuthenticationPrincipal User user) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         return new ResponseEntity<>(this.courseService.update(courseId, updateCourseDTO, user.getId()), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CustomResponse> remove(@PathVariable("id") UUID courseId) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<CustomResponse> remove(@PathVariable("id") UUID courseId, @AuthenticationPrincipal User user) throws CourseNotFoundException, UnauthorizedException, ProfessorNotFoundException {
         return new ResponseEntity<>(new CustomResponse(this.courseService.delete(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PostMapping("/enroll/{id}")
-    public ResponseEntity<CustomResponse> enroll(@PathVariable("id") UUID courseId) throws UserNotFoundException, CourseNotFoundException, UserAlreadyEnrolledException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<CustomResponse> enroll(@PathVariable("id") UUID courseId, @AuthenticationPrincipal User user) throws UserNotFoundException, CourseNotFoundException, UserAlreadyEnrolledException {
         return new ResponseEntity<>(new CustomResponse(this.courseService.enroll(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PostMapping("/disenroll/{id}")
-    public ResponseEntity<CustomResponse> disenroll(@PathVariable("id") UUID courseId) throws UserNotFoundException, CourseNotFoundException, UserNotEnrolledException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<CustomResponse> disenroll(@PathVariable("id") UUID courseId, @AuthenticationPrincipal User user) throws UserNotFoundException, CourseNotFoundException, UserNotEnrolledException {
         return new ResponseEntity<>(new CustomResponse(this.courseService.disenroll(courseId, user.getId()), HttpStatus.OK.value()), HttpStatus.OK);
     }
 
