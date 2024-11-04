@@ -2,8 +2,11 @@ package org.wiliammelo.empoweru.services;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.wiliammelo.empoweru.dtos.course.*;
 import org.wiliammelo.empoweru.dtos.video.VideoWithStatusDTO;
@@ -17,7 +20,6 @@ import org.wiliammelo.empoweru.repositories.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Service class for managing courses.
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
  * {@link ProfessorRepository}, and {@link VideoRepository} to perform operations on {@link Course} entities.</p>
  */
 @Service
+@Log4j2
 @AllArgsConstructor
 public class CourseService {
 
@@ -36,6 +39,8 @@ public class CourseService {
     private final StudentRepository studentRepository;
     private final VideoWatchedRepository videoWatchedRepository;
     private final EnrollmentRepository enrollmentRepository;
+
+    private static final int PAGE_SIZE = 10;
 
     /**
      * Creates a new course based on the provided {@link CreateCourseDTO} object.
@@ -61,18 +66,18 @@ public class CourseService {
      *
      * @return A list of {@link CourseDTO} representing all courses in the repository.
      */
-    @Cacheable(value = "course", key = "#root.method.name")
-    public List<CourseDTO> findAll() {
-        List<Course> courseList = (List<Course>) this.courseRepository.findAll();
+    @Cacheable(value = "course", key = "#root.method.name + '_' + #page + '_' + #pageSize")
+    public List<CourseDTO> findAll(int page, int pageSize) {
+        Page<Course> courseList = this.courseRepository.findAll(PageRequest.of(page, pageSize));
 
-        return courseList.stream()
+        return courseList
+                .stream()
                 .map(course -> {
                     CourseDTO dto = CourseMapper.INSTANCE.toCourseDto(course);
                     dto.setVideosCount(course.getSections().stream().mapToInt(s -> s.getVideos().size()).sum());
                     dto.setDurationInSeconds(this.getTotalDurationInSeconds(course));
                     return dto;
-                })
-                .collect(Collectors.toList());
+                }).toList();
     }
 
     /**
@@ -134,10 +139,12 @@ public class CourseService {
      * @param title The title to search for in course titles.
      * @return A list of {@link CourseDTO} objects that match the title criteria.
      */
-    @Cacheable(value = "course", key = "#title")
-    public List<CourseDTO> findByTitle(String title) {
-        List<Course> courseList = this.courseRepository.findByTitleContainingIgnoreCase(title);
-        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).collect(Collectors.toList());
+    @Cacheable(value = "course", key = "#root.methodName+#args")
+    public List<CourseDTO> findByTitle(String title, int page, int pageSize) {
+        Page<Course> courseList = this.courseRepository.findByTitleContainingIgnoreCase(title, PageRequest.of(page, pageSize));
+        return courseList.stream()
+                .map(CourseMapper.INSTANCE::toCourseDto)
+                .toList();
     }
 
     /**
@@ -146,11 +153,13 @@ public class CourseService {
      * @param tags The list of tags to search for in course tags.
      * @return A list of {@link CourseDTO} objects that match the tags criteria.
      */
-    @Cacheable(value = "course", key = "#tags")
-    public List<CourseDTO> findByTags(List<String> tags) {
+    @Cacheable(value = "course", key = "#root.methodName+#args")
+    public List<CourseDTO> findByTags(List<String> tags, int page, int pageSize) {
         List<String> tagsInLowerCase = tags.stream().map(String::toLowerCase).toList();
-        List<Course> courseList = this.courseRepository.findByTagsContainingIgnoreCase(tagsInLowerCase);
-        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).collect(Collectors.toList());
+        Page<Course> courseList = this.courseRepository.findByTagsContainingIgnoreCase(tagsInLowerCase, PageRequest.of(page, pageSize));
+        return courseList.stream()
+                .map(CourseMapper.INSTANCE::toCourseDto)
+                .toList();
     }
 
     /**
@@ -160,11 +169,13 @@ public class CourseService {
      * @param tags  The list of tags to search for in course tags.
      * @return A list of {@link CourseDTO} objects that match the title and tags criteria.
      */
-    @Cacheable(value = "course", key = "#title + '|' + T(java.util.Objects).hash(#tags.stream().sorted().join(','))")
-    public List<CourseDTO> findByTitleAndTags(String title, List<String> tags) {
+    @Cacheable(value = "course", key = "#title + '|' + T(java.util.Objects).hash(#tags.stream().sorted().join(','))+#page+#pageSize")
+    public List<CourseDTO> findByTitleAndTags(String title, List<String> tags, int page, int pageSize) {
         List<String> tagsInLowerCase = tags.stream().map(String::toLowerCase).toList();
-        List<Course> courseList = this.courseRepository.findByTitleContainingIgnoreCaseAndTagsContainingIgnoreCase(title, tagsInLowerCase);
-        return courseList.stream().map(CourseMapper.INSTANCE::toCourseDto).collect(Collectors.toList());
+        Page<Course> courseList = this.courseRepository.findByTitleContainingIgnoreCaseAndTagsContainingIgnoreCase(title, tagsInLowerCase, PageRequest.of(page, pageSize));
+        return courseList.stream()
+                .map(CourseMapper.INSTANCE::toCourseDto)
+                .toList();
     }
 
     /**

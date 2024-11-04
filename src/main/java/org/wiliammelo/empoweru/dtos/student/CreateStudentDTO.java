@@ -2,12 +2,14 @@ package org.wiliammelo.empoweru.dtos.student;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class CreateStudentDTO {
 
     @NotNull(message = "Cannot be null.")

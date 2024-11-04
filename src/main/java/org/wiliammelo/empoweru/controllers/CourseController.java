@@ -2,6 +2,7 @@ package org.wiliammelo.empoweru.controllers;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ import org.wiliammelo.empoweru.services.CourseService;
 import java.util.List;
 import java.util.UUID;
 
+@Log4j2
 @RestController
 @RequestMapping("/course")
 @AllArgsConstructor
@@ -39,22 +41,24 @@ public class CourseController {
     @GetMapping("/public/")
     public ResponseEntity<List<CourseDTO>> findAll(
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "tags", required = false) List<String> tags
+            @RequestParam(value = "tags", required = false) List<String> tags,
+            @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(value = "page_size", defaultValue = "15", required = false) int pageSize
     ) {
         List<CourseDTO> courses;
 
         if (title != null && !title.isEmpty() && tags != null && !tags.isEmpty()) {
             // Find by tags and title
-            courses = courseService.findByTitleAndTags(title, tags);
+            courses = courseService.findByTitleAndTags(title, tags, page, pageSize);
         } else if (title != null && !title.isEmpty()) {
             // Find only by title
-            courses = courseService.findByTitle(title);
+            courses = courseService.findByTitle(title, page, pageSize);
         } else if (tags != null && !tags.isEmpty()) {
             // Find only by tags
-            courses = courseService.findByTags(tags);
+            courses = courseService.findByTags(tags, page, pageSize);
         } else {
             // If none parameter is given returns all courses
-            courses = courseService.findAll();
+            courses = courseService.findAll(page, pageSize);
         }
 
         return new ResponseEntity<>(courses, HttpStatus.OK);
