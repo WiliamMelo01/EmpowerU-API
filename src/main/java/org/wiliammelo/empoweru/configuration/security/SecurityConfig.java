@@ -1,6 +1,7 @@
 package org.wiliammelo.empoweru.configuration.security;
 
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,6 +14,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @EnableWebSecurity
 @Configuration
@@ -25,6 +28,15 @@ public class SecurityConfig {
     private static final String STUDENT_ROLE = "STUDENT";
     private static final String PROFESSOR_ROLE = "PROFESSOR";
 
+    @Value("${dev.client.url}")
+    private String devClientUrl;
+
+    @Value("${prod.client.url:}")
+    private String prodClientUrl;
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -32,7 +44,7 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .cors().disable()
+                .cors(Customizer.withDefaults())
                 .csrf().disable()
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
@@ -85,6 +97,20 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins(activeProfile.equals("dev") ? devClientUrl : prodClientUrl)
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
+            }
+        };
     }
 
     @Bean
