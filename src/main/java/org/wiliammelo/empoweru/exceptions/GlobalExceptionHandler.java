@@ -22,6 +22,7 @@ import java.util.Map;
 /**
  * Centralized exception handling class across the whole application.
  */
+@Log4j2
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -179,6 +180,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CustomResponse> handleGenericException(Exception ex) {
+        logger.error(ex.getMessage(), ex);
         return new ResponseEntity<>(new CustomResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
